@@ -16,6 +16,9 @@ using System.Text.RegularExpressions;
 /// </summary>
 namespace FormulaEvaluator
 {
+    /// <summary>
+    /// bob
+    /// </summary>
     public static class Evaluator
     {
         public delegate int Lookup(String variable_name);
@@ -26,11 +29,17 @@ namespace FormulaEvaluator
 
             List<string> list = new List<string>(substrings);//change the string array to list, so that we can modify
 
-            list.Remove(" ");//remove empty strings mixed in
+            //function which checks whether a string is empty or not
+            static bool isEmpty(string str)
+            {
+                return (str.Equals(" "));
+            }
+
+            list.RemoveAll(isEmpty);//remove empty strings mixed in
 
             foreach(string token in list)
             {
-                if(!(token.Equals("(") || token.Equals(")") || token.Equals("+") || token.Equals("-") || token.Equals("*") || token.Equals("/") || token.Equals("^[a-zA-Z][0-9]$"))){
+                if(!(token.Equals("(") || token.Equals(")") || token.Equals("+") || token.Equals("-") || token.Equals("*") || token.Equals("/") || token.Equals("^[a-zA-Z]+[0-9]+$"))){
                     throw new ArgumentException();
                 }
             }
@@ -40,8 +49,41 @@ namespace FormulaEvaluator
 
             foreach(string token in list)
             {
-               
+                if (token.Equals("[0-9]+"))
+                {
+                    string opt = operatorStack.Pop();
+                    if (opt.Equals("*"))
+                    {
+                        if(valueStack.Count == 0)
+                        {
+                            throw new ArgumentException();
+                        }
+                        else
+                        {
+                            string val = valueStack.Pop();
+                            int result = Int32.Parse(token) * Int32.Parse(val); //integer? delegate?
+                        }
+                    }
+                    else if (opt.Equals("/"))
+                    {
+                        if (valueStack.Count == 0)
+                        {
+                            throw new ArgumentException();
+                        }
+                        else
+                        {
+                            string val = valueStack.Pop();
+                            if (val.Equals("0"))
+                            {
+                                throw new ArgumentException();
+                            }
+                            int result = Int32.Parse(val) / Int32.Parse(token); //which divides by which?
+                        }
+                    }
+                    valueStack.Push(token);
+                }
             }
+
 
             return 0;
         }
