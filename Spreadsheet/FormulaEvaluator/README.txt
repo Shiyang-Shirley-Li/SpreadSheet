@@ -13,6 +13,9 @@ magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam es
 sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
 2. Assignment Specific Topics:
+    
+    1. I esitmated 12 hours to finish this project;
+    2. I spent 
 
 
 3. Consulted Peers:
