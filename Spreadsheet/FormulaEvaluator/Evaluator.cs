@@ -61,7 +61,8 @@ namespace FormulaEvaluator
                         else
                         {
                             string val = valueStack.Pop();
-                            int result = Int32.Parse(token) * Int32.Parse(val); //integer? delegate?
+                            int result = Int32.Parse(token) * Int32.Parse(val);
+                            valueStack.Push(result.ToString());
                         }
                     }
                     else if (opt.Equals("/"))
@@ -73,14 +74,67 @@ namespace FormulaEvaluator
                         else
                         {
                             string val = valueStack.Pop();
-                            if (val.Equals("0"))
+                            if (token.Equals("0"))
                             {
                                 throw new ArgumentException();
                             }
-                            int result = Int32.Parse(val) / Int32.Parse(token); //which divides by which?
+                            int result = Int32.Parse(val) / Int32.Parse(token);
+                            valueStack.Push(result.ToString());
                         }
                     }
                     valueStack.Push(token);
+                }
+                else if (token.Equals("^[a-zA-Z]+[0-9]+$"))
+                {
+                    string opt = operatorStack.Pop();
+                    if (opt.Equals("*"))
+                    {
+                        if(valueStack.Count == 0)
+                        {
+                            throw new ArgumentException();
+                        }
+                        else
+                        {
+                            string val = valueStack.Pop();
+                            int intTokenM = variableEvaluator(token);//use the looked-up value of t
+                            int result = intTokenM * Int32.Parse(val);
+                            valueStack.Push(result.ToString());
+                        }
+                    }
+                    else if (opt.Equals("/"))
+                    {
+                        if (valueStack.Count == 0)
+                        {
+                            throw new ArgumentException();
+                        }
+                        else
+                        {
+                            string val = valueStack.Pop();
+                            int intTokenD = variableEvaluator(token);//use the looked-up value of t
+                            if (intTokenD == 0)
+                            {
+                                throw new ArgumentException();
+                            }
+                            int result = Int32.Parse(val) / intTokenD;
+                            valueStack.Push(result.ToString());
+                        }
+                    }
+                    int intToken = variableEvaluator(token);//use the looked-up value of t
+                    valueStack.Push(intToken.ToString());
+                }
+                else if(token.Equals("+")|| token.Equals("-"))
+                {
+                    if(valueStack.Count < 2)
+                    {
+                        throw new ArgumentException();
+                    }
+                    else
+                    {
+                        string val1 = valueStack.Pop();
+                        string val2 = valueStack.Pop();
+                        string oper = operatorStack.Pop();
+
+                    }
                 }
             }
 
