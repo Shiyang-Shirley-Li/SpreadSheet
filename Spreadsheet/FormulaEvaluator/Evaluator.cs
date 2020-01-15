@@ -39,7 +39,7 @@ namespace FormulaEvaluator
 
             foreach (string token in list)
             {
-                if (!(token.Equals("(") || token.Equals(")") || token.Equals("+") || token.Equals("-") || token.Equals("*") || token.Equals("/") || token.Equals("^[a-zA-Z]+[0-9]+$")))
+                if (!token.Equals("(") || !token.Equals(")") || !token.Equals("+") || !token.Equals("-") || !token.Equals("*") || !token.Equals("/") || !token.Equals("^[a-zA-Z]+[0-9]+$") || !token.Equals("[0-9]+"))
                 {
                     throw new ArgumentException();
                 }
@@ -47,9 +47,11 @@ namespace FormulaEvaluator
 
             Stack<int> valueStack = new Stack<int>();
             Stack<string> operatorStack = new Stack<string>();
+            int finalResult = 0;
 
             foreach (string token in list)
             {
+                
                 if (token.Equals("[0-9]+") || token.Equals("^[a-zA-Z]+[0-9]+$"))
                 {
                     int t;
@@ -62,12 +64,12 @@ namespace FormulaEvaluator
                         t = variableEvaluator(token);
                     }
 
-                    if (valueStack.Count == 0)
+                    if (valueStack.Count == 0 || operatorStack.Count == 0)
                     {
                         throw new ArgumentException();
                     }
 
-                    string opt = operatorStack.Pop();//
+                    string opt = operatorStack.Pop();
 
                     int val = valueStack.Pop();
 
@@ -94,13 +96,13 @@ namespace FormulaEvaluator
 
                 else if (token.Equals("+") || token.Equals("-") || token.Equals(")"))
                 {
-                    if (valueStack.Count < 2)
+                    if (valueStack.Count < 2 || operatorStack.Count == 0)
                     {
                         throw new ArgumentException();
                     }
                     else
                     {
-                        string oper = operatorStack.Pop();//
+                        string oper = operatorStack.Pop();
 
                         if (oper.Equals("+") || oper.Equals("-"))
                         {
@@ -124,7 +126,11 @@ namespace FormulaEvaluator
                             }
                             else
                             {
-                                string leftP = operatorStack.Pop();//
+                                if(operatorStack.Count == 0)
+                                {
+                                    throw new ArgumentException();
+                                }
+                                string leftP = operatorStack.Pop();
                                 if (!leftP.Equals("("))
                                 {
                                     throw new ArgumentException();
@@ -164,8 +170,36 @@ namespace FormulaEvaluator
                 }
             }
 
+            if(operatorStack.Count == 0 && valueStack.Count == 1)
+            {
+                finalResult = valueStack.Pop();
+            }
+            else if(operatorStack.Count == 0 && valueStack.Count !=1)
+            {
+                throw new ArgumentException();
+            }
+            else if(operatorStack.Count != 0)
+            {
+                if(operatorStack.Count == 1 && operatorStack.Pop().Equals("+")&& valueStack.Count == 2)
+                {
+                    int val1 = valueStack.Pop();
+                    int val2 = valueStack.Pop();
+                    finalResult = variableEvaluator(val2.ToString()) + variableEvaluator(val1.ToString()); 
+                }
+                else if (operatorStack.Count == 1 && operatorStack.Pop().Equals("-") && valueStack.Count == 2)
+                {
+                    int val1 = valueStack.Pop();
+                    int val2 = valueStack.Pop();
+                    finalResult = variableEvaluator(val2.ToString()) - variableEvaluator(val1.ToString());
+                }
+                else
+                {
+                    throw new ArgumentException();
+                }
+            }
 
-            return valueStack.Pop();
+
+            return finalResult;
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FormulaEvaluator;
+using System;
 
 namespace Test_The_Evaluator_Console_App
 {
@@ -6,10 +7,13 @@ namespace Test_The_Evaluator_Console_App
     {
         static void Main(string[] args)
         {
-            if (Evaluator.Evaluate("5+5") == 10)
+            
+            if (Evaluator.Evaluate("5+5", null) == 10)
             {
                 Console.WriteLine("Hello World!");
             }
+
+            
         
         }
     }
