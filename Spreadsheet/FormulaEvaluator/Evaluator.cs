@@ -39,7 +39,7 @@ namespace FormulaEvaluator
 
             foreach (string token in list)
             {
-                if (!token.Equals("(") || !token.Equals(")") || !token.Equals("+") || !token.Equals("-") || !token.Equals("*") || !token.Equals("/") || !token.Equals("^[a-zA-Z]+[0-9]+$") || !token.Equals("[0-9]+"))
+                if (!(!token.Equals("(") || !token.Equals(")") || !token.Equals("+") || !token.Equals("-") || !token.Equals("*") || !token.Equals("/") || !token.Equals("^[a-zA-Z]+[0-9]+$") || !token.Equals("[0-9]+")))
                 {
                     throw new ArgumentException();
                 }
@@ -48,14 +48,16 @@ namespace FormulaEvaluator
             Stack<int> valueStack = new Stack<int>();
             Stack<string> operatorStack = new Stack<string>();
             int finalResult = 0;
+            Regex intNumbers = new Regex("[0-9]+");
+            Regex variableFormat = new Regex("^[a-zA-Z]+[0-9]+$");
 
             foreach (string token in list)
             {
-                
-                if (token.Equals("[0-9]+") || token.Equals("^[a-zA-Z]+[0-9]+$"))
+
+                if (intNumbers.IsMatch(token) || variableFormat.IsMatch(token))
                 {
                     int t;
-                    if (token.Equals("[0-9]+"))//if token is number string, convert it to integer
+                    if (intNumbers.IsMatch(token))//if token is number string, convert it to integer
                     {
                         t = Int32.Parse(token);
                     }
@@ -64,38 +66,60 @@ namespace FormulaEvaluator
                         t = variableEvaluator(token);
                     }
 
-                    if (valueStack.Count == 0 || operatorStack.Count == 0)
+                    if (valueStack.Count == 0 && operatorStack.Count == 0)//when nothing in both stack, just push the integer
                     {
-                        throw new ArgumentException();
+                        valueStack.Push(t);
                     }
-
-                    string opt = operatorStack.Pop();
-
-                    int val = valueStack.Pop();
-
-                    if (opt.Equals("*"))
+                    else
                     {
 
-                        int result = t * val;
-                        valueStack.Push(result);
+                        string opt = operatorStack.Pop();
 
-                    }
-                    else if (opt.Equals("/"))
-                    {
+                        int val = valueStack.Pop();
 
-                        if (t == 0)
+                        if (opt.Equals("*"))
                         {
-                            throw new ArgumentException();
-                        }
-                        int result = val / t;
-                        valueStack.Push(result);
 
+                            int result = t * val;
+                            valueStack.Push(result);
+
+                        }
+                        else if (opt.Equals("/"))
+                        {
+
+                            if (t == 0)
+                            {
+                                throw new ArgumentException();
+                            }
+                            int result = val / t;
+                            valueStack.Push(result);
+
+                        }
+                        else if (opt.Equals("+"))
+                        {
+                            int result = t + val;
+                            valueStack.Push(result);
+                        }
+                        else if (opt.Equals("-"))
+                        {
+                            int result = val - t;
+                            valueStack.Push(result);
+                        }
+                        else
+                        {
+                            valueStack.Push(t);
+                        }
                     }
-                    valueStack.Push(t);
                 }
 
                 else if (token.Equals("+") || token.Equals("-") || token.Equals(")"))
                 {
+                    if (valueStack.Count == 1 || operatorStack.Count == 0)
+                    {
+                        operatorStack.Push(token);
+                    }
+                    else
+                    { 
                     if (valueStack.Count < 2 || operatorStack.Count == 0)
                     {
                         throw new ArgumentException();
@@ -119,14 +143,14 @@ namespace FormulaEvaluator
                                 int result = val2 - val1;
                                 valueStack.Push(result);
                             }
-                            
-                            if(token.Equals("+") || token.Equals("-"))
+
+                            if (token.Equals("+") || token.Equals("-"))
                             {
                                 operatorStack.Push(token);
                             }
                             else
                             {
-                                if(operatorStack.Count == 0)
+                                if (operatorStack.Count == 0)
                                 {
                                     throw new ArgumentException();
                                 }
@@ -137,7 +161,7 @@ namespace FormulaEvaluator
                                 }
 
                                 string finalO = operatorStack.Pop();//
-                                if (finalO.Equals("*")||finalO.Equals("/"))
+                                if (finalO.Equals("*") || finalO.Equals("/"))
                                 {
                                     int valF1 = valueStack.Pop();
                                     int valF2 = valueStack.Pop();
@@ -149,20 +173,22 @@ namespace FormulaEvaluator
                                     }
                                     else
                                     {
-                                        if(valF1 == 0)
+                                        if (valF1 == 0)
                                         {
                                             throw new ArgumentException();
                                         }
-                                        else{
+                                        else
+                                        {
                                             int result = valF2 / valF1;
                                             valueStack.Push(result);
                                         }
                                     }
-                                    
+
                                 }
                             }
                         }
                     }
+                }
                 }
                 else if (token.Equals("*") || token.Equals("/") || token.Equals("("))
                 {
