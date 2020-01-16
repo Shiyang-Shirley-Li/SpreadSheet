@@ -29,6 +29,16 @@ namespace FormulaEvaluator
         public delegate int Lookup(String variable_name);//a delegate used to look up the value of a variable
 
         /// <summary>
+        /// A helper method for checking if a string contains white space or not
+        /// </summary>
+        /// <param name="str"> A string needed to check if contains white space</param>
+        /// <returns>true if the string has white space, otherwise false</returns>
+        private static bool isEmpty(string str)
+        {
+            return (str.Equals(" "));
+        }
+
+        /// <summary>
         /// Evaluate string expressions, do the calculation and returns the result
         /// </summary>
         /// <param name="expression"> A string of arithmetic expressions </param>
@@ -39,12 +49,6 @@ namespace FormulaEvaluator
             string[] substrings = Regex.Split(expression, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
 
             List<string> subStringsList = new List<string>(substrings);//change the string array to list, so that we can modify
-
-            
-            static bool isEmpty(string str)
-            {
-                return (str.Equals(" "));
-            }
 
             subStringsList.RemoveAll(isEmpty);//remove empty strings mixed in
 
@@ -60,12 +64,12 @@ namespace FormulaEvaluator
             Stack<int> valueStack = new Stack<int>();
             Stack<string> operatorStack = new Stack<string>();
             int finalResult = 0;
-            Regex intNumbers = new Regex("[0-9]+");
+            Regex intNumbers = new Regex("^[0-9]+$");
             Regex variableFormat = new Regex("^[a-zA-Z]+[0-9]+$");
 
-            foreach (string token in subStringsList)
+            foreach (string whiteSpaceToken in subStringsList)
             {
-
+                string token = whiteSpaceToken.Trim();
                 if (intNumbers.IsMatch(token) || variableFormat.IsMatch(token))
                 {
                     int t;
@@ -78,7 +82,7 @@ namespace FormulaEvaluator
                         t = variableEvaluator(token);
                     }
 
-                    if (valueStack.Count <= 1 && (operatorStack.Count == 0 || operatorStack.Peek() == "("))//when nothing in both stack, just push the integer   ????????
+                    if (valueStack.Count <= 1 && (operatorStack.Count == 0 || operatorStack.Peek() == "("))//when nothing in both stack, just push the integer
                     {
                         valueStack.Push(t);
                     }
@@ -229,19 +233,51 @@ namespace FormulaEvaluator
                     string currentOperator = operatorStack.Pop();
                     if (currentOperator.Equals("+"))
                     {
-                        finalResult = variableEvaluator(val2.ToString()) + variableEvaluator(val1.ToString());
+                        if (variableEvaluator != null)
+                        {
+                            finalResult = variableEvaluator(val2.ToString()) + variableEvaluator(val1.ToString());
+                        }
+                        else
+                        {
+                            finalResult = val2 + val1;
+                        }
                     }
                     else if (currentOperator.Equals("-"))
                     {
-                        finalResult = variableEvaluator(val2.ToString()) - variableEvaluator(val1.ToString());
+                        if(variableEvaluator != null)
+                        {
+                            finalResult = variableEvaluator(val2.ToString()) - variableEvaluator(val1.ToString());
+                        }
+                        else
+                        {
+                            finalResult = val2 - val1;
+                        }
                     }
                     else if (currentOperator.Equals("*"))
                     {
-                        finalResult = variableEvaluator(val2.ToString()) * variableEvaluator(val1.ToString());
+                        if(variableEvaluator != null)
+                        {
+                            finalResult = variableEvaluator(val2.ToString()) * variableEvaluator(val1.ToString());
+                        }
+                        else
+                        {
+                            finalResult = val2 * val1;
+                        }
                     }
-                    else if (currentOperator.Equals("/") && val1 != 0)
+                    else if (currentOperator.Equals("/"))
                     {
-                        finalResult = variableEvaluator(val2.ToString()) / variableEvaluator(val1.ToString());
+                        if(val2 == 0)
+                        {
+                            throw new ArgumentException();
+                        }
+                        else if(variableEvaluator != null)
+                        {
+                            finalResult = variableEvaluator(val2.ToString()) / variableEvaluator(val1.ToString());
+                        }
+                        else
+                        {
+                            finalResult = val2 / val1;
+                        }
                     }
                 }
                 else

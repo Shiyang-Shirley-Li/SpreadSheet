@@ -13,8 +13,8 @@ namespace Test_The_Evaluator_Console_App
             twoNumsMultiplicationTest();
             twoNumsDivisionTest();
             parenthesesTest();
-            //orderOfOperationTest();
-            //lookUpTest();
+            orderOfOperationTest();
+            lookUpTest();
         }
 
         static void twoNumsPlusTest()
