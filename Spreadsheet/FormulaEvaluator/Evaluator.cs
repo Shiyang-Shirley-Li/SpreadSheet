@@ -78,7 +78,7 @@ namespace FormulaEvaluator
                         t = variableEvaluator(token);
                     }
 
-                    if (valueStack.Count == 0 && operatorStack.Count <= 1)//when nothing in both stack, just push the integer
+                    if (valueStack.Count <= 1 && (operatorStack.Count == 0 || operatorStack.Peek() == "("))//when nothing in both stack, just push the integer   ????????
                     {
                         valueStack.Push(t);
                     }
@@ -126,11 +126,11 @@ namespace FormulaEvaluator
 
                 else if (token.Equals("+") || token.Equals("-") || token.Equals(")"))
                 {
-                    if ((valueStack.Count == 1 && !token.Equals(")")) || operatorStack.Count == 0)
+                    if ((valueStack.Count == 1 && !token.Equals(")")) || operatorStack.Count == 0 || (operatorStack.Peek().Equals("(") && !token.Equals(")")))
                     {
                         operatorStack.Push(token);
                     }
-                    else if(valueStack.Count == 1 && token.Equals(")") && operatorStack.Count == 1)
+                    else if(valueStack.Count == operatorStack.Count && token.Equals(")") )
                     {
                         operatorStack.Pop();
                     }
@@ -222,17 +222,27 @@ namespace FormulaEvaluator
             }
             else if(operatorStack.Count != 0)
             {
-                if(operatorStack.Count == 1 && operatorStack.Pop().Equals("+")&& valueStack.Count == 2)
+                if (operatorStack.Count == 1 && valueStack.Count == 2)
                 {
                     int val1 = valueStack.Pop();
                     int val2 = valueStack.Pop();
-                    finalResult = variableEvaluator(val2.ToString()) + variableEvaluator(val1.ToString()); 
-                }
-                else if (operatorStack.Count == 1 && operatorStack.Pop().Equals("-") && valueStack.Count == 2)
-                {
-                    int val1 = valueStack.Pop();
-                    int val2 = valueStack.Pop();
-                    finalResult = variableEvaluator(val2.ToString()) - variableEvaluator(val1.ToString());
+                    string currentOperator = operatorStack.Pop();
+                    if (currentOperator.Equals("+"))
+                    {
+                        finalResult = variableEvaluator(val2.ToString()) + variableEvaluator(val1.ToString());
+                    }
+                    else if (currentOperator.Equals("-"))
+                    {
+                        finalResult = variableEvaluator(val2.ToString()) - variableEvaluator(val1.ToString());
+                    }
+                    else if (currentOperator.Equals("*"))
+                    {
+                        finalResult = variableEvaluator(val2.ToString()) * variableEvaluator(val1.ToString());
+                    }
+                    else if (currentOperator.Equals("/") && val1 != 0)
+                    {
+                        finalResult = variableEvaluator(val2.ToString()) / variableEvaluator(val1.ToString());
+                    }
                 }
                 else
                 {

@@ -14,7 +14,7 @@ namespace Test_The_Evaluator_Console_App
             twoNumsDivisionTest();
             parenthesesTest();
             //orderOfOperationTest();
-            lookUpTest();
+            //lookUpTest();
         }
 
         static void twoNumsPlusTest()
@@ -51,9 +51,9 @@ namespace Test_The_Evaluator_Console_App
 
         static void parenthesesTest()
         {
-            if (Evaluator.Evaluate("(2+6)/2", null) == 4)
+            if (Evaluator.Evaluate("6/(1+1)", null) == 3)
             {
-                Console.WriteLine("(2 + 6) / 2 = 4 !");
+                Console.WriteLine("6 / (1+1) = 3 !");
             }
         }
 
