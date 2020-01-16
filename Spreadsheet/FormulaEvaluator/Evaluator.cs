@@ -31,24 +31,25 @@ namespace FormulaEvaluator
         /// <summary>
         /// Evaluate string expressions, do the calculation and returns the result
         /// </summary>
-        /// <param name="expression"> A string  </param>
-        /// <param name="variableEvaluator"></param>
-        /// <returns></returns>
+        /// <param name="expression"> A string of arithmetic expressions </param>
+        /// <param name="variableEvaluator"> A delegate can be used to look up the value of a variable </param>
+        /// <returns>the result of the arithmetic expression</returns>
         public static int Evaluate(String expression, Lookup variableEvaluator)
         {
             string[] substrings = Regex.Split(expression, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
 
-            List<string> list = new List<string>(substrings);//change the string array to list, so that we can modify
+            List<string> subStringsList = new List<string>(substrings);//change the string array to list, so that we can modify
 
-            //function which checks whether a string is empty or not
+            
             static bool isEmpty(string str)
             {
                 return (str.Equals(" "));
             }
 
-            list.RemoveAll(isEmpty);//remove empty strings mixed in
+            subStringsList.RemoveAll(isEmpty);//remove empty strings mixed in
 
-            foreach (string token in list)
+            //check if all the tokens are legal
+            foreach (string token in subStringsList)
             {
                 if (!(!token.Equals("(") || !token.Equals(")") || !token.Equals("+") || !token.Equals("-") || !token.Equals("*") || !token.Equals("/") || !token.Equals("^[a-zA-Z]+[0-9]+$") || !token.Equals("[0-9]+")))
                 {
@@ -62,7 +63,7 @@ namespace FormulaEvaluator
             Regex intNumbers = new Regex("[0-9]+");
             Regex variableFormat = new Regex("^[a-zA-Z]+[0-9]+$");
 
-            foreach (string token in list)
+            foreach (string token in subStringsList)
             {
 
                 if (intNumbers.IsMatch(token) || variableFormat.IsMatch(token))
@@ -77,7 +78,7 @@ namespace FormulaEvaluator
                         t = variableEvaluator(token);
                     }
 
-                    if (valueStack.Count == 0 && operatorStack.Count == 0)//when nothing in both stack, just push the integer
+                    if (valueStack.Count == 0 && operatorStack.Count <= 1)//when nothing in both stack, just push the integer
                     {
                         valueStack.Push(t);
                     }
@@ -125,9 +126,13 @@ namespace FormulaEvaluator
 
                 else if (token.Equals("+") || token.Equals("-") || token.Equals(")"))
                 {
-                    if (valueStack.Count == 1 || operatorStack.Count == 0)
+                    if ((valueStack.Count == 1 && !token.Equals(")")) || operatorStack.Count == 0)
                     {
                         operatorStack.Push(token);
+                    }
+                    else if(valueStack.Count == 1 && token.Equals(")") && operatorStack.Count == 1)
+                    {
+                        operatorStack.Pop();
                     }
                     else
                     { 
@@ -171,7 +176,7 @@ namespace FormulaEvaluator
                                     throw new ArgumentException();
                                 }
 
-                                string finalO = operatorStack.Pop();//
+                                string finalO = operatorStack.Pop();
                                 if (finalO.Equals("*") || finalO.Equals("/"))
                                 {
                                     int valF1 = valueStack.Pop();
