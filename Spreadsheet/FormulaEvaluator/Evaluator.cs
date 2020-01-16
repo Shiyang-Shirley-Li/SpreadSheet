@@ -17,12 +17,23 @@ using System.Text.RegularExpressions;
 namespace FormulaEvaluator
 {
     /// <summary>
-    /// 
+    /// The Evaluator is a class that evaluates arithmatic expressions
+    /// using standard infix notation, which respects the usual precedence
+    /// rules
     /// </summary>
+    /// <remarks>
+    /// This class can add, subtract, multiply and divide
+    /// </remarks>
     public static class Evaluator
     {
-        public delegate int Lookup(String variable_name);
+        public delegate int Lookup(String variable_name);//a delegate used to look up the value of a variable
 
+        /// <summary>
+        /// Evaluate string expressions, do the calculation and returns the result
+        /// </summary>
+        /// <param name="expression"> A string  </param>
+        /// <param name="variableEvaluator"></param>
+        /// <returns></returns>
         public static int Evaluate(String expression, Lookup variableEvaluator)
         {
             string[] substrings = Regex.Split(expression, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");

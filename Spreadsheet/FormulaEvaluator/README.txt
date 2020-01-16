@@ -1,13 +1,11 @@
 Author:     [Shiyang(Shirley) Li]
 Partner:    [None]
 Date:       [01/11/2020]
-Course:     CS 4540, University of Utah, School of Computing
+Course:     CS 3500, University of Utah, School of Computing
 Assignment: Assignment one - Formula Evaluator
 Copyright:  CS 3500 and [Shiyang(Shirley) Li] - This work may not be copied for use in Academic Coursework.
 
 1. Comments to Evaluators:
-
-
 
 2. Assignment Specific Topics:
     
@@ -16,8 +14,6 @@ Copyright:  CS 3500 and [Shiyang(Shirley) Li] - This work may not be copied for 
 
 
 3. Consulted Peers:
-
-
 
 4. References:
 
