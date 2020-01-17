@@ -197,9 +197,9 @@ namespace FormulaEvaluator
                 {
                     operatorStack.Push(token);
                 }
-                else if (token.Equals(")"))//copy.......
+                else if (token.Equals(")"))
                 {
-                    if (valueStack.Count <= 0)//?????
+                    if (valueStack.Count <= 0)
                     {
                         throw new ArgumentException("Nothing to caculate");
                     }
@@ -243,7 +243,7 @@ namespace FormulaEvaluator
 
                     if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
                     {
-                        if (valueStack.Count <= 0)//?????
+                        if (valueStack.Count <= 0)
                         {
                             throw new ArgumentException("Nothing to caculate");
                         }
