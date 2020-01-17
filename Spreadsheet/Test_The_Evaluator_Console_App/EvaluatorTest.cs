@@ -47,11 +47,11 @@ namespace Test_The_Evaluator_Console_App
 
             valueStackLessThanTwoValsExceptionTest();
 
-            leftParenthesisNotFoundExceptionTest();
+            rightParenthesisNotFoundExceptionTest();
 
             illegalSymbolsExceptionTest();
 
-
+            leftParenthesisNotFoundExceptionTest();
         }
 
         /// <summary>
@@ -73,7 +73,7 @@ namespace Test_The_Evaluator_Console_App
                 return 0;
             }
             throw new ArgumentException("No such variable!");
-                
+
         }
         static void twoNumsPlusTest()
         {
@@ -83,7 +83,7 @@ namespace Test_The_Evaluator_Console_App
             }
         }
 
-       public static void twoNumsMinusTest()
+        public static void twoNumsMinusTest()
         {
             if (Evaluator.Evaluate("5-4", null) == 1)
             {
@@ -125,7 +125,7 @@ namespace Test_The_Evaluator_Console_App
 
         static void lookUpVariableTest()
         {
-            if (Evaluator.Evaluate("x1 * 5", (x1)=>6) == 30)
+            if (Evaluator.Evaluate("x1 * 5", (x1) => 6) == 30)
             {
                 Console.WriteLine("x1 * 5 = 30 !");
             }
@@ -179,15 +179,15 @@ namespace Test_The_Evaluator_Console_App
             }
         }
 
-        static void leftParenthesisNotFoundExceptionTest()
+        static void rightParenthesisNotFoundExceptionTest()
         {
             try
             {
-                Evaluator.Evaluate("(1 + 1 / 2 ", null);
+                Evaluator.Evaluate("(1 + 1 / 2", null);
             }
             catch (ArgumentException)
             {
-                Console.WriteLine("A ( isn't found where expected!");
+                Console.WriteLine("A ) isn't found where expected!");
             }
         }
 
@@ -200,6 +200,18 @@ namespace Test_The_Evaluator_Console_App
             catch (ArgumentException)
             {
                 Console.WriteLine("Illegal symbol!");
+            }
+        }
+
+        static void leftParenthesisNotFoundExceptionTest()
+        {
+            try
+            {
+                Evaluator.Evaluate("1 + 1) / 2", null);
+            }
+            catch (ArgumentException)
+            {
+                Console.WriteLine("A ( isn't found where expected!");
             }
         }
     }
