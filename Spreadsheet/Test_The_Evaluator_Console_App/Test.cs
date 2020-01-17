@@ -13,7 +13,7 @@ namespace Test_The_Evaluator_Console_App
             twoNumsMultiplicationTest();
             twoNumsDivisionTest();
             parenthesesTest();
-            orderOfOperationTest();
+            orderOfOperatorTest();
             lookUpTest();
         }
 
@@ -57,11 +57,11 @@ namespace Test_The_Evaluator_Console_App
             }
         }
 
-        static void orderOfOperationTest()
+        static void orderOfOperatorTest()
         {
             if (Evaluator.Evaluate("2 + 4 * 5", null) == 22)
             {
-                Console.WriteLine("2 + 4 * 5 = 24 !");
+                Console.WriteLine("2 + 4 * 5 = 22 !");
             }
         }
 

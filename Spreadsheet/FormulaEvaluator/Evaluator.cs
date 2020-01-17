@@ -39,6 +39,18 @@ namespace FormulaEvaluator
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        private static bool hasOnTop(this Stack<String> stack, string value)
+        {
+            if (stack.Count > 0 && (stack.Peek().Equals("*") || (stack.Peek().Equals("/"))))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        /// <summary>
         /// Evaluate string expressions, do the calculation and returns the result
         /// </summary>
         /// <param name="expression"> A string of arithmetic expressions </param>
@@ -69,7 +81,7 @@ namespace FormulaEvaluator
 
             foreach (string whiteSpaceToken in subStringsList)
             {
-                string token = whiteSpaceToken.Trim();
+                string token = whiteSpaceToken.Trim();//delete all the possible space
                 if (intNumbers.IsMatch(token) || variableFormat.IsMatch(token))
                 {
                     int t;
@@ -82,151 +94,212 @@ namespace FormulaEvaluator
                         t = variableEvaluator(token);
                     }
 
-                    if (valueStack.Count <= 1 && (operatorStack.Count == 0 || operatorStack.Peek() == "("))//when nothing in both stack, just push the integer
+                    if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
                     {
-                        valueStack.Push(t);
-                    }
-                    else
-                    {
-
-                        string opt = operatorStack.Pop();
-
-                        int val = valueStack.Pop();
-
-                        if (opt.Equals("*"))
+                        if (valueStack.Count == 0)
                         {
-
-                            int result = t * val;
-                            valueStack.Push(result);
-
-                        }
-                        else if (opt.Equals("/"))
-                        {
-
-                            if (t == 0)
-                            {
-                                throw new ArgumentException();
-                            }
-                            int result = val / t;
-                            valueStack.Push(result);
-
-                        }
-                        else if (opt.Equals("+"))
-                        {
-                            int result = t + val;
-                            valueStack.Push(result);
-                        }
-                        else if (opt.Equals("-"))
-                        {
-                            int result = val - t;
-                            valueStack.Push(result);
+                            throw new ArgumentException("The value stack is empty, when * or / is at the top");
                         }
                         else
                         {
-                            valueStack.Push(t);
+                            int currentVal = valueStack.Pop();
+                            string currentOperator = operatorStack.Pop();
+
+                            if (currentOperator.Equals("*"))
+                            {
+                                int currentResult = currentVal * t;
+                                valueStack.Push(currentResult);
+                            }
+                            else if (t == 0)
+                            {
+                                throw new ArgumentException("A division by zero occurs.");
+                            }
+                            else
+                            {
+                                int currentResult = currentVal / t;
+                                valueStack.Push(currentResult);
+                            }
                         }
                     }
+                    else
+                    {
+                        valueStack.Push(t);
+                    }
                 }
-
-                else if (token.Equals("+") || token.Equals("-") || token.Equals(")"))
+                else if ((token.Equals("+") || token.Equals("-")))
                 {
-                    if ((valueStack.Count == 1 && !token.Equals(")")) || operatorStack.Count == 0 || (operatorStack.Peek().Equals("(") && !token.Equals(")")))
+
+                    if (valueStack.Count <= 0)//?????
+                    {
+                        throw new ArgumentException("Nothing to plus");
+                    }
+                    else if (valueStack.Count == 1)
                     {
                         operatorStack.Push(token);
                     }
-                    else if(valueStack.Count == operatorStack.Count && token.Equals(")") )
-                    {
-                        operatorStack.Pop();
-                    }
-                    else
-                    { 
-                    if (valueStack.Count < 2 || operatorStack.Count == 0)
-                    {
-                        throw new ArgumentException();
-                    }
                     else
                     {
-                        string oper = operatorStack.Pop();
-
-                        if (oper.Equals("+") || oper.Equals("-"))
+                        if (operatorStack.Count < 0)
                         {
-                            int val1 = valueStack.Pop();
-                            int val2 = valueStack.Pop();
-
-                            if (oper.Equals("+"))
-                            {
-                                int result = val2 + val1;
-                                valueStack.Push(result);
-                            }
-                            else
-                            {
-                                int result = val2 - val1;
-                                valueStack.Push(result);
-                            }
-
-                            if (token.Equals("+") || token.Equals("-"))
-                            {
-                                operatorStack.Push(token);
-                            }
-                            else
-                            {
-                                if (operatorStack.Count == 0)
-                                {
-                                    throw new ArgumentException();
-                                }
-                                string leftP = operatorStack.Pop();
-                                if (!leftP.Equals("("))
-                                {
-                                    throw new ArgumentException();
-                                }
-
-                                string finalO = operatorStack.Pop();
-                                if (finalO.Equals("*") || finalO.Equals("/"))
-                                {
-                                    int valF1 = valueStack.Pop();
-                                    int valF2 = valueStack.Pop();
-
-                                    if (finalO.Equals("*"))
-                                    {
-                                        int result = valF2 * valF2;
-                                        valueStack.Push(result);
-                                    }
-                                    else
-                                    {
-                                        if (valF1 == 0)
-                                        {
-                                            throw new ArgumentException();
-                                        }
-                                        else
-                                        {
-                                            int result = valF2 / valF1;
-                                            valueStack.Push(result);
-                                        }
-                                    }
-
-                                }
-                            }
+                            throw new ArgumentException("No operator for more than two numbers");
                         }
+                        else
+                        {
+
+                            if (operatorStack.Peek().Equals("*"))
+                            {
+                                int secondVal = valueStack.Pop();
+                                int firstVal = valueStack.Pop();
+                                int currentResult = firstVal * secondVal;
+                                valueStack.Push(currentResult);
+                                operatorStack.Pop();
+                            }
+                            else if (operatorStack.Peek().Equals("/"))
+                            {
+                                int secondVal = valueStack.Pop();
+                                int firstVal = valueStack.Pop();
+
+                                if (secondVal == 0)
+                                {
+                                    throw new ArgumentException("A division by zero occurs.");
+                                }
+                                else
+                                {
+                                    int currentResult = firstVal / secondVal;
+                                    valueStack.Push(currentResult);
+                                    operatorStack.Pop();
+                                }
+                            }
+                            else if (operatorStack.Peek().Equals("+"))
+                            {
+                                int secondVal = valueStack.Pop();
+                                int firstVal = valueStack.Pop();
+                                int currentResult = firstVal + secondVal;
+                                valueStack.Push(currentResult);
+                                operatorStack.Pop();
+                            }
+                            else if (operatorStack.Peek().Equals("-"))
+                            {
+                                int secondVal = valueStack.Pop();
+                                int firstVal = valueStack.Pop();
+                                int currentResult = firstVal - secondVal;
+                                valueStack.Push(currentResult);
+                                operatorStack.Pop();
+                            }
+                            operatorStack.Push(token);
+                        }
+
+
                     }
-                }
+
                 }
                 else if (token.Equals("*") || token.Equals("/") || token.Equals("("))
                 {
                     operatorStack.Push(token);
                 }
-            }
+                else if (token.Equals(")"))//copy.......
+                {
+                    if (valueStack.Count <= 0)//?????
+                    {
+                        throw new ArgumentException("Nothing to caculate");
+                    }
+                    else
+                    {
+                        if (operatorStack.Count < 0 && valueStack.Count < 2)
+                        {
+                            throw new ArgumentException("No operator for more than two numbers");
+                        }
+                        else
+                        {
 
-            if(operatorStack.Count == 0 && valueStack.Count == 1)
+                            if (operatorStack.Peek().Equals("+"))
+                            {
+                                int secondVal = valueStack.Pop();
+                                int firstVal = valueStack.Pop();
+                                int currentResult = firstVal + secondVal;
+                                valueStack.Push(currentResult);
+                                operatorStack.Pop();
+                            }
+                            else if (operatorStack.Peek().Equals("-"))
+                            {
+                                int secondVal = valueStack.Pop();
+                                int firstVal = valueStack.Pop();
+                                int currentResult = firstVal - secondVal;
+                                valueStack.Push(currentResult);
+                                operatorStack.Pop();
+                            }
+
+                        }
+                    }
+
+                    if (!operatorStack.Peek().Equals("("))
+                    {
+                        throw new ArgumentException("A ( isn't found where expected");
+                    }
+                    else
+                    {
+                        operatorStack.Pop();
+                    }
+
+                    if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
+                    {
+                        if (valueStack.Count <= 0)//?????
+                        {
+                            throw new ArgumentException("Nothing to caculate");
+                        }
+                        else
+                        {
+                            if (operatorStack.Count < 0 && valueStack.Count < 2)
+                            {
+                                throw new ArgumentException("No operator for more than two numbers");
+                            }
+                            else
+                            {
+
+                                if (operatorStack.Peek().Equals("*"))
+                                {
+                                    int secondVal = valueStack.Pop();
+                                    int firstVal = valueStack.Pop();
+                                    int currentResult = firstVal * secondVal;
+                                    valueStack.Push(currentResult);
+                                    operatorStack.Pop();
+                                }
+                                else if (operatorStack.Peek().Equals("/"))
+                                {
+
+                                    int secondVal = valueStack.Pop();
+                                    int firstVal = valueStack.Pop();
+                                    if (secondVal == 0)
+                                    {
+                                        throw new ArgumentException("A division by 0 occurs");
+                                    }
+                                    else
+                                    {
+                                        int currentResult = firstVal / secondVal;
+                                        valueStack.Push(currentResult);
+                                        operatorStack.Pop();
+                                    }
+                                }
+
+                            }
+                        }
+                    }
+
+                }
+                
+                }
+
+            if (operatorStack.Count == 0 && valueStack.Count == 1)
             {
                 finalResult = valueStack.Pop();
             }
-            else if(operatorStack.Count == 0 && valueStack.Count !=1)
+            else if (operatorStack.Count == 0 && valueStack.Count != 1)
             {
                 throw new ArgumentException();
             }
-            else if(operatorStack.Count != 0)
+            else if (operatorStack.Count != 0)
             {
-                if (operatorStack.Count == 1 && valueStack.Count == 2)
+                if (operatorStack.Count == 1 && (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-")) && valueStack.Count == 2)
                 {
                     int val1 = valueStack.Pop();
                     int val2 = valueStack.Pop();
@@ -244,7 +317,7 @@ namespace FormulaEvaluator
                     }
                     else if (currentOperator.Equals("-"))
                     {
-                        if(variableEvaluator != null)
+                        if (variableEvaluator != null)
                         {
                             finalResult = variableEvaluator(val2.ToString()) - variableEvaluator(val1.ToString());
                         }
@@ -253,40 +326,13 @@ namespace FormulaEvaluator
                             finalResult = val2 - val1;
                         }
                     }
-                    else if (currentOperator.Equals("*"))
-                    {
-                        if(variableEvaluator != null)
-                        {
-                            finalResult = variableEvaluator(val2.ToString()) * variableEvaluator(val1.ToString());
-                        }
-                        else
-                        {
-                            finalResult = val2 * val1;
-                        }
-                    }
-                    else if (currentOperator.Equals("/"))
-                    {
-                        if(val2 == 0)
-                        {
-                            throw new ArgumentException();
-                        }
-                        else if(variableEvaluator != null)
-                        {
-                            finalResult = variableEvaluator(val2.ToString()) / variableEvaluator(val1.ToString());
-                        }
-                        else
-                        {
-                            finalResult = val2 / val1;
-                        }
-                    }
                 }
                 else
                 {
                     throw new ArgumentException();
                 }
+
             }
-
-
             return finalResult;
         }
     }
