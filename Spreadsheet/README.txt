@@ -5,6 +5,26 @@ Course:     CS 3500, University of Utah, School of Computing
 Assignment: Assignment One - Formula Evaluator
 Copyright:  CS 3500 and [Shirley(Shiyang) Li] - This work may not be copied for use in Academic Coursework.
 
+Hours Estimated/Worked         Assignment                       Note
+         12    /   18    - Assignment 1 - Formula Evaluator     Spent 6 extra hours debugging and achieving Good Software Practice, otherwise good.
+         18    /         - Assignment 2 - Dependency Graph      ...
+
+Assignment Two - Dependency Graph   01/20/2020 - 01/24/2020
+1. Comments to Evaluators:
+
+2. Assignment Specific Topics
+	1. I estimate that I need 18 hours for this project;
+	2. Exactly, I spent  hours. 
+
+3. Consulted Peers:
+	
+
+4. References:
+	
+
+
+
+Assignment One - Formula Evaluator   01/11/2020 - 01/17/2020
 1. Comments to Evaluators:
 	1. I combined the code for both the token is an integer and a variable to avoid reusing code by looking up 
 	the variable at the very beginning and changing it into an integer;
