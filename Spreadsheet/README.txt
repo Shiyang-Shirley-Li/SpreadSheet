@@ -1,8 +1,8 @@
 Author:     [Shirley(Shiyang) Li]
 Partner:    [None]
-Date:       [1/11/2020]
+Date:       [1/20/2020]
 Course:     CS 3500, University of Utah, School of Computing
-Assignment: Assignment One - Formula Evaluator
+Assignment: Assignment TWO - Dependency Graph
 Copyright:  CS 3500 and [Shirley(Shiyang) Li] - This work may not be copied for use in Academic Coursework.
 
 Hours Estimated/Worked         Assignment                       Note
