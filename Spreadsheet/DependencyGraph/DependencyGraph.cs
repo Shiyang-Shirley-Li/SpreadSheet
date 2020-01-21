@@ -64,7 +64,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public int Size
         {
-            get { return graphSize; } //all pairs???
+            get { return graphSize; } 
         }
 
 
@@ -108,7 +108,7 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// Reports whether dependees(s) is non-empty.
         /// </summary>
-        public bool HasDependees(string s)// s is dependent?????
+        public bool HasDependees(string s)// s is dependent
         {
             if (!dependents.ContainsKey(s))
             {
@@ -125,7 +125,7 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// Enumerates dependents(s).
         /// </summary>
-        public IEnumerable<string> GetDependents(string s)//s is dependee?????
+        public IEnumerable<string> GetDependents(string s)//s is dependee
         {
             return null;
         }
@@ -133,7 +133,7 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// Enumerates dependees(s).
         /// </summary>
-        public IEnumerable<string> GetDependees(string s)//s is dependent?
+        public IEnumerable<string> GetDependees(string s)//s is dependent
         {
             return null;
         }
@@ -156,10 +156,17 @@ namespace SpreadsheetUtilities
                 HashSet<String> dependentsSet = new HashSet<string>();
                 dependentsSet.Add(t);
                 dependees.Add(s, dependentsSet);
-            }
-            if (!dependees[s].Contains(t))
-            {
 
+                HashSet<String> dependeesSet = new HashSet<string>();
+                dependentsSet.Add(s);
+                dependees.Add(t, dependeesSet);
+                graphSize++;
+            }
+            else if (!dependees[s].Contains(t))
+            {
+                dependees[s].Add(t);
+                dependents[t].Add(s);
+                graphSize++;
             }
         }
 
@@ -171,6 +178,13 @@ namespace SpreadsheetUtilities
         /// <param name="t"></param>
         public void RemoveDependency(string s, string t)
         {
+            if(this.HasDependees(t) && dependents[t].Contains(s) || this.HasDependents(s) && dependees[s].Contains(t))//need two conditions?
+            {
+                dependents[t].Remove(s);
+                dependees[s].Remove(t);
+                graphSize--;
+            }
+
         }
 
 
