@@ -44,9 +44,9 @@ namespace SpreadsheetUtilities
     {
         private int graphSize;
 
-        private Dictionary<String, HashSet<String>> dependents;
+        private Dictionary<String, HashSet<String>> dependents;//dependents have dependents as key and dependees as value
 
-        private Dictionary<String, HashSet<String>> dependees;
+        private Dictionary<String, HashSet<String>> dependees;//dependees have dependees as key and dependents as value
 
         /// <summary>
         /// Creates an empty DependencyGraph.
@@ -75,13 +75,13 @@ namespace SpreadsheetUtilities
         /// dg["a"]
         /// It should return the size of dependees("a")
         /// </summary>
-        public int this[string s] // s is a dependent; Throw Exception?????
+        public int this[string s] // s is a dependent
         {
             get
             {
                 if (!dependents.ContainsKey(s))
                 {
-                    throw new ArgumentException("The key is not in the dictionary!");
+                    return 0;
                 }
                 return dependents[s].Count;
             }
@@ -95,9 +95,9 @@ namespace SpreadsheetUtilities
         {
             if (!dependees.ContainsKey(s))
             {
-                return false; //?????? or throw exception
+                return false;
             }
-            if(dependees[s].Count > 0)
+            else if(dependees[s].Count > 0)
             {
                 return true;
             }
@@ -112,9 +112,9 @@ namespace SpreadsheetUtilities
         {
             if (!dependents.ContainsKey(s))
             {
-                return false; //?????? or throw exception
+                return false; 
             }
-            if (dependents[s].Count > 0)
+            else if (dependents[s].Count > 0)
             {
                 return true;
             }
@@ -127,7 +127,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependents(string s)//s is dependee
         {
-            return null;
+            return dependees[s];
         }
 
         /// <summary>
@@ -135,7 +135,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependees(string s)//s is dependent
         {
-            return null;
+            return dependents[s];
         }
 
 
@@ -192,8 +192,17 @@ namespace SpreadsheetUtilities
         /// Removes all existing ordered pairs of the form (s,r).  Then, for each
         /// t in newDependents, adds the ordered pair (s,t).
         /// </summary>
-        public void ReplaceDependents(string s, IEnumerable<string> newDependents) //??????????
+        public void ReplaceDependents(string s, IEnumerable<string> newDependents)//should graphSize be zero here?
         {
+            dependees[s].Clear();
+
+            HashSet<string> newDependentsSet = new HashSet<string>();
+            foreach(string dependent in newDependents)
+            {
+                newDependentsSet.Add(dependent);
+            }
+            dependees[s] = newDependentsSet;
+
         }
 
 
@@ -201,8 +210,16 @@ namespace SpreadsheetUtilities
         /// Removes all existing ordered pairs of the form (r,s).  Then, for each 
         /// t in newDependees, adds the ordered pair (t,s).
         /// </summary>
-        public void ReplaceDependees(string s, IEnumerable<string> newDependees) //????????
+        public void ReplaceDependees(string s, IEnumerable<string> newDependees) 
         {
+            dependents[s].Clear();
+
+            HashSet<string> newDependeesSet = new HashSet<string>();
+            foreach (string dependent in newDependees)
+            {
+                newDependeesSet.Add(dependent);
+            }
+            dependees[s] = newDependeesSet;
         }
 
     }
