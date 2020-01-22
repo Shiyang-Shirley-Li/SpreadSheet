@@ -156,17 +156,22 @@ namespace SpreadsheetUtilities
                 HashSet<String> dependentsSet = new HashSet<string>();
                 dependentsSet.Add(t);
                 dependees.Add(s, dependentsSet);
-
-                HashSet<String> dependeesSet = new HashSet<string>();
-                dependentsSet.Add(s);
-                dependees.Add(t, dependeesSet);
                 graphSize++;
             }
-            else if (!dependees[s].Contains(t))
+            else
             {
                 dependees[s].Add(t);
-                dependents[t].Add(s);
                 graphSize++;
+            }
+            if (!dependents.ContainsKey(t))
+            {
+                HashSet<String> dependeesSet = new HashSet<string>();
+                dependeesSet.Add(s);
+                dependents.Add(t, dependeesSet);
+            }
+            else
+            {
+                dependents[t].Add(s);
             }
         }
 
