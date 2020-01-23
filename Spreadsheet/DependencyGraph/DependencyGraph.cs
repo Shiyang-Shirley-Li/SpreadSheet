@@ -127,7 +127,11 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependents(string s)//s is dependee
         {
-            return dependees[s];
+            if (dependees.ContainsKey(s))
+            {
+                return dependees[s];
+            }
+            return new HashSet<string>();
         }
 
         /// <summary>
@@ -135,7 +139,11 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<string> GetDependees(string s)//s is dependent
         {
-            return dependents[s];
+            if (dependents.ContainsKey(s))
+            {
+                return dependents[s];
+            }
+            return new HashSet<string>();
         }
 
 
@@ -199,14 +207,22 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)//should graphSize be zero here?
         {
-            dependees[s].Clear();
-
+            
             HashSet<string> newDependentsSet = new HashSet<string>();
-            foreach(string dependent in newDependents)
+            foreach (string dependent in newDependents)
             {
                 newDependentsSet.Add(dependent);
             }
-            dependees[s] = newDependentsSet;
+
+            if (dependees.ContainsKey(s))
+            {
+                dependees[s].Clear();
+                dependees[s] = newDependentsSet;
+            }
+            else
+            {
+                dependees.Add(s, newDependentsSet);
+            }
 
         }
 
