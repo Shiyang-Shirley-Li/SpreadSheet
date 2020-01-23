@@ -205,7 +205,7 @@ namespace SpreadsheetUtilities
         /// Removes all existing ordered pairs of the form (s,r).  Then, for each
         /// t in newDependents, adds the ordered pair (s,t).
         /// </summary>
-        public void ReplaceDependents(string s, IEnumerable<string> newDependents)//should graphSize be zero here?
+        public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
             
             HashSet<string> newDependentsSet = new HashSet<string>();
@@ -214,14 +214,42 @@ namespace SpreadsheetUtilities
                 newDependentsSet.Add(dependent);
             }
 
+            foreach(string dependent in dependees[s])
+            {
+                dependents[dependent].Remove(s);
+            }
+
             if (dependees.ContainsKey(s))
             {
                 dependees[s].Clear();
                 dependees[s] = newDependentsSet;
+
+                foreach(string dependent in newDependentsSet)
+                {
+                    if (dependents.ContainsKey(dependent))
+                    {
+                        dependents[dependent].Add(s);
+                    }
+                    else
+                    {
+                        dependents.Add(dependent, new HashSet<string> { s });
+                    }
+                }
             }
             else
             {
                 dependees.Add(s, newDependentsSet);
+                foreach (string dependent in newDependentsSet)
+                {
+                    if (dependents.ContainsKey(dependent))
+                    {
+                        dependents[dependent].Add(s);
+                    }
+                    else
+                    {
+                        dependents.Add(dependent, new HashSet<string> { s });
+                    }
+                }
             }
 
         }
