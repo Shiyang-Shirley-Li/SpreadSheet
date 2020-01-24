@@ -389,5 +389,30 @@ namespace DevelopmentTests
             Assert.IsTrue(e.MoveNext());
             Assert.AreEqual("x", e.Current);
         }
+
+        /// <summary>
+        ///Remove dependency when s or t is not in the dictionary
+        ///</summary>
+        [TestMethod()]
+        public void RemoveDependencyTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("x", "y");
+            t.RemoveDependency("a", "b");
+
+            Assert.IsTrue(t.HasDependees("y"));
+            Assert.IsTrue(t.HasDependents("x"));
+
+        }
+
+        /// <summary>
+        ///Test for replace dependents when both s and the items in the newDependts are not in the dictionary
+        ///</summary>
+        [TestMethod()]
+        public void ReplaceDependentsTest1()
+        {
+
+
+        }
     }
 }
