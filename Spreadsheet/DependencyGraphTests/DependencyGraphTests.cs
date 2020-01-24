@@ -293,6 +293,20 @@ namespace DevelopmentTests
         }
 
         /// <summary>
+        ///Test a string that has dependents
+        ///</summary>
+        [TestMethod()]
+        public void HasDependentTestFirstCase()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            t.AddDependency("a", "c");
+            t.AddDependency("c", "b");
+            t.AddDependency("b", "d");
+            Assert.IsTrue(t.HasDependents("a"));
+        }
+
+        /// <summary>
         ///Test if a string that is not in the dependee dictionary has a dependent or not
         ///</summary>
         [TestMethod()]
@@ -348,6 +362,32 @@ namespace DevelopmentTests
             t.AddDependency("b", "d");
             t.ReplaceDependees("c", new HashSet<string>());
             Assert.IsFalse(t.HasDependees("c"));
+        }
+
+        /// <summary>
+        ///Test for ReplaceDependents when the strings in the newDependents has already existed in the dependent dictionary
+        ///</summary>
+        [TestMethod()]
+        public void ReplaceDependentsTest()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("x", "b");
+            t.AddDependency("c", "b");
+            t.AddDependency("a", "z");
+            t.ReplaceDependees("z", new HashSet<string>());
+            t.ReplaceDependents("x", new HashSet<string> { "z" });
+
+            IEnumerator<string> e = t.GetDependents("x").GetEnumerator();
+            Assert.IsTrue(e.MoveNext());
+            Assert.AreEqual("z", e.Current);
+
+            e = t.GetDependees("b").GetEnumerator();
+            Assert.IsTrue(e.MoveNext());
+            Assert.AreEqual("c", e.Current);
+
+            e = t.GetDependees("z").GetEnumerator();
+            Assert.IsTrue(e.MoveNext());
+            Assert.AreEqual("x", e.Current);
         }
     }
 }
