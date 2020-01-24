@@ -315,9 +315,39 @@ namespace DevelopmentTests
             DependencyGraph t = new DependencyGraph();
             t.AddDependency("a", "b");
             t.AddDependency("a", "c");
-            t.AddDependency("c", "");//how to make a dependee that do not have a dependent?????
+            t.AddDependency("c", "b");
             t.AddDependency("b", "d");
-            Assert.IsFalse(t.HasDependents("c"));
+            t.ReplaceDependents("a", new HashSet<string>());
+            Assert.IsFalse(t.HasDependents("a"));
+        }
+
+        /// <summary>
+        ///Test if a string that is not in the dependent dictionary has a dependee or not
+        ///</summary>
+        [TestMethod()]
+        public void NotHasDependeeTestFirstCase()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            t.AddDependency("a", "c");
+            t.AddDependency("c", "b");
+            t.AddDependency("b", "d");
+            Assert.IsFalse(t.HasDependees("a"));
+        }
+
+        /// <summary>
+        ///Test a string that dose not have a dependee
+        ///</summary>
+        [TestMethod()]
+        public void NotHasDependeeTestSecondCase()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            t.AddDependency("a", "c");
+            t.AddDependency("c", "b");
+            t.AddDependency("b", "d");
+            t.ReplaceDependees("c", new HashSet<string>());
+            Assert.IsFalse(t.HasDependees("c"));
         }
     }
 }

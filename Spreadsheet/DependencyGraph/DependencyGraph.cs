@@ -191,7 +191,7 @@ namespace SpreadsheetUtilities
         /// <param name="t"></param>
         public void RemoveDependency(string s, string t)
         {
-            if(this.HasDependees(t) && dependents[t].Contains(s) || this.HasDependents(s) && dependees[s].Contains(t))//need two conditions?
+            if(this.HasDependees(t) && dependents[t].Contains(s))// || this.HasDependents(s) && dependees[s].Contains(t))//need two conditions?
             {
                 dependents[t].Remove(s);
                 dependees[s].Remove(t);
