@@ -214,13 +214,14 @@ namespace SpreadsheetUtilities
                 newDependentsSet.Add(dependent);
             }
 
-            foreach(string dependent in dependees[s])
-            {
-                dependents[dependent].Remove(s);
-            }
 
             if (dependees.ContainsKey(s))
             {
+                foreach (string dependent in dependees[s])
+                {
+                    dependents[dependent].Remove(s);
+                }
+
                 dependees[s].Clear();
                 dependees[s] = newDependentsSet;
 
@@ -261,14 +262,52 @@ namespace SpreadsheetUtilities
         /// </summary>
         public void ReplaceDependees(string s, IEnumerable<string> newDependees) 
         {
-            dependents[s].Clear();
 
             HashSet<string> newDependeesSet = new HashSet<string>();
-            foreach (string dependent in newDependees)
+            foreach (string dependee in newDependees)
             {
-                newDependeesSet.Add(dependent);
+                newDependeesSet.Add(dependee);
             }
-            dependees[s] = newDependeesSet;
+
+
+            if (dependents.ContainsKey(s))
+            {
+                foreach (string dependee in dependents[s])
+                {
+                    dependees[dependee].Remove(s);
+                }
+
+                dependents[s].Clear();
+                dependents[s] = newDependeesSet;
+
+                foreach (string dependee in newDependeesSet)
+                {
+                    if (dependees.ContainsKey(dependee))
+                    {
+                        dependees[dependee].Add(s);
+                    }
+                    else
+                    {
+                        dependees.Add(dependee, new HashSet<string> { s });
+                    }
+                }
+            }
+            else
+            {
+                dependents.Add(s, newDependeesSet);
+                foreach (string dependee in newDependeesSet)
+                {
+                    if (dependees.ContainsKey(dependee))
+                    {
+                        dependents[dependee].Add(s);
+                    }
+                    else
+                    {
+                        dependents.Add(dependee, new HashSet<string> { s });
+                    }
+                }
+            }
+
         }
 
     }
