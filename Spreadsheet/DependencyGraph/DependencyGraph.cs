@@ -166,7 +166,7 @@ namespace SpreadsheetUtilities
                 dependees.Add(s, dependentsSet);
                 graphSize++;
             }
-            else
+            else if (!dependees[s].Contains(t))
             {
                 dependees[s].Add(t);
                 graphSize++;
@@ -177,7 +177,7 @@ namespace SpreadsheetUtilities
                 dependeesSet.Add(s);
                 dependents.Add(t, dependeesSet);
             }
-            else
+            else if(!dependents[t].Contains(s))
             {
                 dependents[t].Add(s);
             }
@@ -239,18 +239,11 @@ namespace SpreadsheetUtilities
             }
             else
             {
-                dependees.Add(s, newDependentsSet);
-                foreach (string dependent in newDependentsSet)
+                foreach(string dent in newDependentsSet)
                 {
-                    if (dependents.ContainsKey(dependent))
-                    {
-                        dependents[dependent].Add(s);
-                    }
-                    else
-                    {
-                        dependents.Add(dependent, new HashSet<string> { s });
-                    }
+                    this.AddDependency(s, dent);
                 }
+
             }
 
         }
@@ -294,17 +287,9 @@ namespace SpreadsheetUtilities
             }
             else
             {
-                dependents.Add(s, newDependeesSet);
-                foreach (string dependee in newDependeesSet)
+                foreach (string dee in newDependeesSet)
                 {
-                    if (dependees.ContainsKey(dependee))
-                    {
-                        dependents[dependee].Add(s);
-                    }
-                    else
-                    {
-                        dependents.Add(dependee, new HashSet<string> { s });
-                    }
+                    this.AddDependency(dee, s);
                 }
             }
 

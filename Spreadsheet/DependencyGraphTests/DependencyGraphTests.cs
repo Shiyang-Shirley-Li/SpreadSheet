@@ -406,13 +406,48 @@ namespace DevelopmentTests
         }
 
         /// <summary>
-        ///Test for replace dependents when both s and the items in the newDependts are not in the dictionary
+        ///Test for replace when both s and the items in the newDependets(newDependees) are not in the dictionary
         ///</summary>
         [TestMethod()]
-        public void ReplaceDependentsTest1()
+        public void ReplaceTest1()
         {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("x", "y");
+            t.AddDependency("a", "b");
+            t.AddDependency("a", "c");
 
+            t.ReplaceDependents("m", new HashSet<string> { "v" });
 
+            IEnumerator<string> e = t.GetDependees("v").GetEnumerator();
+            Assert.IsTrue(e.MoveNext());
+            Assert.AreEqual("m", e.Current);
+
+            e = t.GetDependents("m").GetEnumerator();
+            Assert.IsTrue(e.MoveNext());
+            Assert.AreEqual("v", e.Current);
+
+            t.ReplaceDependees("l", new HashSet<string> { "s" });
+
+            e = t.GetDependees("l").GetEnumerator();
+            Assert.IsTrue(e.MoveNext());
+            Assert.AreEqual("s", e.Current);
+
+            e = t.GetDependents("s").GetEnumerator();
+            Assert.IsTrue(e.MoveNext());
+            Assert.AreEqual("l", e.Current);
+        }
+
+        /// <summary>
+        ///Test for size of adding duplicates
+        ///</summary>
+        [TestMethod()]
+        public void SizeOfAddingDuplicates()
+        {
+            DependencyGraph t = new DependencyGraph();
+            t.AddDependency("a", "b");
+            t.AddDependency("a", "b");
+
+            Assert.AreEqual(1, t.Size);
         }
     }
 }
