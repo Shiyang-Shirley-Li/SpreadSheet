@@ -28,7 +28,7 @@ namespace SpreadsheetUtilities
   /// <summary>
   /// Represents formulas written in standard infix notation using standard precedence
   /// rules.  The allowed symbols are non-negative numbers written using double-precision 
-  /// floating-point syntax (without unary preceeding '-' or '+'); 
+  /// floating-point syntax (without unary preceeding '-' or '+'); //????????
   /// variables that consist of a letter or underscore followed by 
   /// zero or more letters, underscores, or digits; parentheses; and the four operator 
   /// symbols +, -, *, and /.  
@@ -54,7 +54,7 @@ namespace SpreadsheetUtilities
     /// maps every string to true.  
     /// </summary>
     public Formula(String formula) :
-        this(formula, s => s, s => true)
+        this(formula, s => s, s => true)//？？？？？？
     {
     }
 
@@ -100,7 +100,7 @@ namespace SpreadsheetUtilities
     /// (if it has one) or throws an ArgumentException (otherwise).
     /// 
     /// If no undefined variables or divisions by zero are encountered when evaluating 
-    /// this Formula, the value is returned.  Otherwise, a FormulaError is returned.  
+    /// this Formula, the value is returned.  Otherwise, a FormulaError is returned.  //？？？？？
     /// The Reason property of the FormulaError should have a meaningful explanation.
     ///
     /// This method should never throw an exception.
@@ -219,7 +219,7 @@ namespace SpreadsheetUtilities
       // Enumerate matching tokens that don't consist solely of white space.
       foreach (String s in Regex.Split(formula, pattern, RegexOptions.IgnorePatternWhitespace))
       {
-        if (!Regex.IsMatch(s, @"^\s*$", RegexOptions.Singleline))
+        if (!Regex.IsMatch(s, @"^\s*$", RegexOptions.Singleline))//???
         {
           yield return s;
         }
