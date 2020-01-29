@@ -46,7 +46,9 @@ namespace SpreadsheetUtilities
     public class Formula
     {
         //instance variables
-
+        private Regex variableFormat = new Regex("^([a-zA-Z]|[/_])[0-9a-zA-Z]*$");//????
+        private IEnumerable<string> formulaTokens;
+        private HashSet<string> normalizedVariables;
 
 
         /// <summary>
@@ -82,29 +84,33 @@ namespace SpreadsheetUtilities
         /// 
         /// new Formula("x2+y3", N, V) should succeed
         /// new Formula("x+y3", N, V) should throw an exception, since V(N("x")) is false
-        /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect. //????????
+        /// new Formula("2x+y3", N, V) should throw an exception, since "2x+y3" is syntactically incorrect. 
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
 
-            Regex variableFormat = new Regex("^([a-zA-Z]|[/_])[0-9a-zA-Z]*$");
+            formulaTokens = GetTokens(formula);
+            normalizedVariables = new HashSet<string>();
 
-            IEnumerable<string> formulaTokens = GetTokens(formula);
-
-            foreach (string tokens in formulaTokens) //how to avoid uary minus and plus???????
+            foreach (string tokens in formulaTokens) //how to avoid unary minus and plus???????
             {
                 if (!(!(Double.TryParse(tokens, out double result)&& result>=0) || 
                     !variableFormat.IsMatch(tokens)|| !tokens.Equals("(") ||
                     !tokens.Equals(")") || !tokens.Equals("+" )|| !tokens.Equals("*")
-                    || !tokens.Equals("-")|| !tokens.Equals("/"))) //check if the tokens of the formula in right format.
+                    || !tokens.Equals("-")|| !tokens.Equals("/"))) //If the expression is syntactically incorrect or not.
                 {
                     throw new FormulaFormatException("The expression is syntactically incorrect.");
                 }
 
-                if (variableFormat.IsMatch(tokens) && isValid(normalize(tokens)))
+                if (variableFormat.IsMatch(tokens) && !isValid(normalize(tokens)))//If the variable is legal or not
                 {
                     throw new FormulaFormatException("The formula contains at least an invalid variable");
                 }
+                else if (variableFormat.IsMatch(tokens))//
+                {
+                    normalizedVariables.Add(normalize(tokens));
+                }
+
             }
         }
 
@@ -132,6 +138,204 @@ namespace SpreadsheetUtilities
         public object Evaluate(Func<string, double> lookup)
         {
             return null;
+            //string[] substrings = Regex.Split(expression, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
+
+            //List<string> subStringsList = new List<string>(substrings);//change the string array to list, so that we can modify
+
+            //subStringsList.RemoveAll(isEmpty);//remove empty strings mixed in
+
+            ////check if all the tokens are legal
+            //foreach (string token in subStringsList)
+            //{
+            //    if (!(!token.Equals("(") || !token.Equals(")") || !token.Equals("+") || !token.Equals("-") || !token.Equals("*") || !token.Equals("/") || !token.Equals("^[a-zA-Z]+[0-9]+$") || !token.Equals("[0-9]+")))
+            //    {
+            //        throw new ArgumentException();
+            //    }
+            //}
+
+            //Stack<int> valueStack = new Stack<int>();
+            //Stack<string> operatorStack = new Stack<string>();
+            //int finalResult = 0;
+            //Regex intNumbers = new Regex("^[0-9]+$");
+            //Regex variableFormat = new Regex("^[a-zA-Z]+[0-9]+$");
+
+            //foreach (string whiteSpaceToken in subStringsList)
+            //{
+            //    string token = whiteSpaceToken.Trim();//delete all the possible space
+
+            //    //when the token is integer or a variable
+            //    if (intNumbers.IsMatch(token) || variableFormat.IsMatch(token))
+            //    {
+            //        int t;
+            //        if (intNumbers.IsMatch(token))//if token is number string, convert it to integer
+            //        {
+            //            t = Int32.Parse(token);
+            //        }
+            //        else//if token is variable string, use the looked-up value of the token
+            //        {
+            //            t = variableEvaluator(token);
+            //        }
+
+            //        if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
+            //        {
+            //            if (valueStack.Count == 0)
+            //            {
+            //                throw new ArgumentException("The value stack is empty, when * or / is at the top");
+            //            }
+            //            else
+            //            {
+            //                int currentVal = valueStack.Pop();
+            //                string currentOperator = operatorStack.Pop();
+
+            //                if (currentOperator.Equals("*"))
+            //                {
+            //                    int currentResult = currentVal * t;
+            //                    valueStack.Push(currentResult);
+            //                }
+            //                else if (t == 0)
+            //                {
+            //                    throw new ArgumentException("A division by zero occurs.");
+            //                }
+            //                else
+            //                {
+            //                    int currentResult = currentVal / t;
+            //                    valueStack.Push(currentResult);
+            //                }
+            //            }
+            //        }
+            //        else
+            //        {
+            //            valueStack.Push(t);
+            //        }
+            //    }
+
+            //    //when the token is + or -
+            //    else if ((token.Equals("+") || token.Equals("-")))
+            //    {
+
+            //        if (valueStack.Count <= 0)
+            //        {
+            //            throw new ArgumentException("Nothing to plus");
+            //        }
+            //        else if (valueStack.Count == 1)
+            //        {
+            //            operatorStack.Push(token);
+            //        }
+            //        else
+            //        {
+            //            if (operatorStack.Count < 0)
+            //            {
+            //                throw new ArgumentException("No operator for more than two numbers");
+            //            }
+            //            else
+            //            {
+            //                if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+            //                {
+            //                    operatorWithPopValStackTwice(operatorStack, valueStack);
+            //                }
+            //                else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+            //                {
+            //                    operatorWithPopValStackTwice(operatorStack, valueStack);
+            //                }
+            //                operatorStack.Push(token);
+            //            }
+            //        }
+            //    }
+
+            //    //when the token is * or / or (
+            //    else if (token.Equals("*") || token.Equals("/") || token.Equals("("))
+            //    {
+            //        operatorStack.Push(token);
+            //    }
+
+            //    //when the tooken is )
+            //    else if (token.Equals(")"))
+            //    {
+            //        if (valueStack.Count <= 0)
+            //        {
+            //            throw new ArgumentException("Nothing to caculate");
+            //        }
+            //        else
+            //        {
+            //            if (operatorStack.Count < 0 && valueStack.Count < 2)
+            //            {
+            //                throw new ArgumentException("No operator for more than two numbers");
+            //            }
+            //            else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+            //            {
+            //                operatorWithPopValStackTwice(operatorStack, valueStack);
+            //            }
+            //        }
+            //        if (operatorStack.Count == 0)
+            //        {
+            //            throw new ArgumentException("A ( isn't found where expected");
+            //        }
+            //        else if (operatorStack.Count != 0)
+            //        {
+            //            if (!operatorStack.Peek().Equals("("))
+            //            {
+            //                throw new ArgumentException("A ( isn't found where expected");
+            //            }
+            //            else
+            //            {
+            //                operatorStack.Pop();
+            //            }
+            //        }
+
+            //        if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
+            //        {
+            //            if (valueStack.Count <= 0)
+            //            {
+            //                throw new ArgumentException("Nothing to caculate");
+            //            }
+            //            else
+            //            {
+            //                if (operatorStack.Count < 0 && valueStack.Count < 2)
+            //                {
+            //                    throw new ArgumentException("No operator for more than two numbers");
+            //                }
+            //                else
+            //                {
+            //                    if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+            //                    {
+            //                        operatorWithPopValStackTwice(operatorStack, valueStack);
+            //                    }
+            //                }
+            //            }
+            //        }
+            //    }
+            //}
+            ////When the last token has been processed
+            //if (operatorStack.Count == 0 && valueStack.Count == 1)
+            //{
+            //    finalResult = valueStack.Pop();
+            //}
+            //else if (operatorStack.Count == 0 && valueStack.Count != 1)
+            //{
+            //    throw new ArgumentException();
+            //}
+            //else if (operatorStack.Count != 0)
+            //{
+            //    if (operatorStack.Count == 1 && (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-")) && valueStack.Count == 2)
+            //    {
+            //        int val1 = valueStack.Pop();
+            //        int val2 = valueStack.Pop();
+            //        string currentOperator = operatorStack.Pop();
+            //        if (currentOperator.Equals("+"))
+            //        {
+            //            finalResult = val2 + val1;
+            //        }
+            //        else if (currentOperator.Equals("-"))
+            //        {
+            //            finalResult = val2 - val1;
+            //        }
+            //    }
+            //    else
+            //    {
+            //        throw new ArgumentException();
+            //    }
+            //}
+            //return finalResult;
         }
 
         /// <summary>
@@ -147,7 +351,15 @@ namespace SpreadsheetUtilities
         /// </summary>
         public IEnumerable<String> GetVariables()
         {
-            return null;
+            HashSet<String> variables = new HashSet<string>();
+            foreach(string tokens in normalizedVariables)
+            {
+                if (! variables.Contains(tokens))
+                {
+                    variables.Add(tokens);
+                }
+            }
+            return variables;
         }
 
         /// <summary>
