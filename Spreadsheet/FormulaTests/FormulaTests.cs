@@ -13,16 +13,7 @@ namespace FormulaTests
         public void constructor_syntacticallyIncorrectExpressionTest()
         {
             Regex oneDigitOneLetter = new Regex("[0-9][A-Za-z]");
-
-            try
-            {
-                Formula badFormula = new Formula("2x+y3", s => s.ToUpper(), oneDigitOneLetter.IsMatch);
-            }
-            catch (FormulaFormatException)
-            {
-                return;//why not right?
-            }
-            Assert.Fail("Syntactically Correct Expression.");
+            Formula badFormula = new Formula("2x+y3", s => s.ToUpper(), oneDigitOneLetter.IsMatch);
         }
 
         [TestMethod]
@@ -30,28 +21,25 @@ namespace FormulaTests
         public void constructor_legalVariableTest()
         {
             Regex oneDigitOneLetter = new Regex("^[0-9][A-Za-z]$");
-
-            try
-            {
-                Formula badFormula = new Formula("x + y3", s => s.ToUpper(), oneDigitOneLetter.IsMatch);
-            }
-            catch (FormulaFormatException)
-            {
-                return;
-            }
-            Assert.Fail("Legal Variable.");
+            Formula badFormula = new Formula("x + y3", s => s.ToUpper(), oneDigitOneLetter.IsMatch);
         }
 
+        public bool isValid(string str)
+        {
+            Regex oneDigitOneLetter = new Regex("[A-Za-z][0-9]");
+            if (oneDigitOneLetter.IsMatch(str))
+            {
+                return true;
+            }
+            return false;
+        }
         [TestMethod]
         public void constructorTest()
         {
-            Regex oneDigitOneLetter = new Regex("^[0-9][A-Za-z]$");
-
-            Formula goodFormula = new Formula("x2+y3", s => s.ToUpper(), oneDigitOneLetter.IsMatch);//validate
+            Regex oneDigitOneLetter = new Regex("[0-9][A-Za-z]");
+            Formula goodFormula = new Formula("x2+y3", s => s.ToUpper(),isValid);
         }
 
-        
-        
         [TestMethod]
         public void test_GetVariables()
         {
@@ -88,8 +76,8 @@ namespace FormulaTests
             Assert.AreEqual("x+Y", new Formula("x + Y").ToString());
         }
 
-        
-        
+
+
         [TestMethod]
         public void test_Equals()
         {

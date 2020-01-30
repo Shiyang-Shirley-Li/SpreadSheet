@@ -26,12 +26,12 @@ using System.Text.RegularExpressions;
 namespace SpreadsheetUtilities
 {
     /// <summary>
-    /// 
+    /// An extension class for checking formula format
     /// </summary>
     static class ExtensionsClass
     {
         /// <summary>
-        /// 
+        /// A method to check if a variable is 
         /// </summary>
         /// <param name="variable"></param>
         /// <returns></returns>
@@ -142,11 +142,6 @@ namespace SpreadsheetUtilities
 
             for(int i = 0; i < formulaTokensList.Count(); i++)
             {
-                //Variable legality
-                if (formulaTokensList[i].isVariable())
-                {
-                    formulaTokensList[i] = normalize(formulaTokensList[i]);//????right way? how can I know if a variable is legal or not?
-                }
 
                 if (formulaTokensList[i].isVariable() && !isValid(normalize(formulaTokensList[i])))
                 {
@@ -154,7 +149,7 @@ namespace SpreadsheetUtilities
                 }
                 //Syntactical correction
                 if (!(!formulaTokensList[0].isNonNegativeDoulbe() || !formulaTokensList[0].isVariable()
-                || !formulaTokensList[0].Equals("(")))
+                || !formulaTokensList[0].Equals("(")))//if statement??????
                 {
                     throw new FormulaFormatException("The starting token is wrong!");
                 }
@@ -193,10 +188,11 @@ namespace SpreadsheetUtilities
                     }
                 }
 
+                //variable legality??????
                 if ((formulaTokensList[i].isNonNegativeDoulbe() || formulaTokensList[i].isVariable()
                         || formulaTokensList[i].Equals(")")) && i + 1 < formulaTokensList.Count())
                 {
-                    if (!(!formulaTokensList[i + 1].isOperator() || !formulaTokensList[i + 1].Equals(")"))) //if statement
+                    if (!(!formulaTokensList[i + 1].isOperator() || !formulaTokensList[i + 1].Equals(")"))) 
                     {
                         throw new FormulaFormatException("Wrong extra following!");
                     }
@@ -514,12 +510,12 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override bool Equals(object obj)
         {
-            if(obj == null || obj != (Formula)obj)//how to know if a obj is a formula or not???????
+            if(obj == null || !(obj is Formula))
             {
                 return false;
             }
 
-            Formula objFormula = (Formula)obj;//?????
+            Formula objFormula = (Formula)obj;//?????how to change a obj into formula??
 
             foreach(string token in normalizedFormula)
             {
