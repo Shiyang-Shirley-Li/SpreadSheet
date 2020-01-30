@@ -26,6 +26,50 @@ using System.Text.RegularExpressions;
 namespace SpreadsheetUtilities
 {
     /// <summary>
+    /// 
+    /// </summary>
+    static class ExtensionsClass
+    {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="variable"></param>
+        /// <returns></returns>
+        public static Boolean isVariable(this string variable)
+        {
+            Regex variableFormat = new Regex("^([a-zA-Z]|[/_])[0-9a-zA-Z]*$");
+            if (variableFormat.IsMatch(variable))
+            {
+                return true;
+            }
+            return false;
+        } 
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="fourOperators"></param>
+        /// <returns></returns>
+        public static Boolean isOperator(this string fourOperators)
+        {
+            if(fourOperators.Equals("+") || fourOperators.Equals("*")
+                    || fourOperators.Equals("-") || fourOperators.Equals("/"))
+            {
+                return true;
+            }
+            return false;
+        }
+
+        public static Boolean isNonNegativeDoulbe(this string token)
+        {
+            if(Double.TryParse(token, out double firstResult) && firstResult >=0)
+            {
+                return true;
+            }
+            return false;
+        }
+    }
+    /// <summary>
     /// Represents formulas written in standard infix notation using standard precedence
     /// rules.  The allowed symbols are non-negative numbers written using double-precision 
     /// floating-point syntax (without unary preceeding '-' or '+'); 
@@ -46,15 +90,13 @@ namespace SpreadsheetUtilities
     public class Formula
     {
         //instance variables
-        private Regex variableFormat = new Regex("^([a-zA-Z]|[/_])[0-9a-zA-Z]*$");//????
-        private IEnumerable<string> formulaTokens;
-        private HashSet<string> normalizedVariables;
+        private List<string> normalizedFormula;
 
 
         /// <summary>
         /// Creates a Formula from a string that consists of an infix expression written as
         /// described in the class comment.  If the expression is syntactically invalid,
-        /// throws a FormulaFormatException with an explanatory Message.//check by using getTokens, normalizer, and validate??????
+        /// throws a FormulaFormatException with an explanatory Message.
         /// 
         /// The associated normalizer is the identity function, and the associated validator
         /// maps every string to true. 
@@ -76,7 +118,7 @@ namespace SpreadsheetUtilities
         /// throws a FormulaFormatException with an explanatory message. 
         /// 
         /// If the formula contains a variable v such that isValid(normalize(v)) is false,
-        /// throws a FormulaFormatException with an explanatory message.//two ifs the same thing??????????????????
+        /// throws a FormulaFormatException with an explanatory message.
         /// 
         /// Suppose that N is a method that converts all the letters in a string to upper case, and
         /// that V is a method that returns true only if a string consists of one letter followed
@@ -88,29 +130,96 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
+            List<string> formulaTokensList = GetTokens(formula).ToList();
+            int numOfLeftParentheses = 0;
+            int numOfRightParentheses = 0;
 
-            formulaTokens = GetTokens(formula);
-            normalizedVariables = new HashSet<string>();
-
-            foreach (string tokens in formulaTokens) //how to avoid unary minus and plus???????
+            //Syntactical correction
+            if (formulaTokensList.Count() < 1)
             {
-                if (!(!(Double.TryParse(tokens, out double result)&& result>=0) || 
-                    !variableFormat.IsMatch(tokens)|| !tokens.Equals("(") ||
-                    !tokens.Equals(")") || !tokens.Equals("+" )|| !tokens.Equals("*")
-                    || !tokens.Equals("-")|| !tokens.Equals("/"))) //If the expression is syntactically incorrect or not.
+                throw new FormulaFormatException("There must be at least one token!");
+            }
+
+            for(int i = 0; i < formulaTokensList.Count(); i++)
+            {
+                //Variable legality
+                if (formulaTokensList[i].isVariable())
                 {
-                    throw new FormulaFormatException("The expression is syntactically incorrect.");
+                    formulaTokensList[i] = normalize(formulaTokensList[i]);//????right way? how can I know if a variable is legal or not?
                 }
 
-                if (variableFormat.IsMatch(tokens) && !isValid(normalize(tokens)))//If the variable is legal or not
+                if (formulaTokensList[i].isVariable() && !isValid(normalize(formulaTokensList[i])))
                 {
-                    throw new FormulaFormatException("The formula contains at least an invalid variable");
+                    throw new FormulaFormatException("The variable name is not valid!");
                 }
-                else if (variableFormat.IsMatch(tokens))//
+                //Syntactical correction
+                if (!(!formulaTokensList[0].isNonNegativeDoulbe() || !formulaTokensList[0].isVariable()
+                || !formulaTokensList[0].Equals("(")))
                 {
-                    normalizedVariables.Add(normalize(tokens));
+                    throw new FormulaFormatException("The starting token is wrong!");
                 }
 
+                if (!(!formulaTokensList[0].isNonNegativeDoulbe() || !formulaTokensList[0].isVariable()
+                    || !formulaTokensList[0].Equals(")")))
+                {
+                    throw new FormulaFormatException("The ending token is wrong!");
+                }
+
+                if (!(!formulaTokensList[0].isNonNegativeDoulbe() || !formulaTokensList[0].isVariable()||
+                    !formulaTokensList[i].Equals("(") || !formulaTokensList[i].Equals(")")))//check the validity of the token
+                {
+                    throw new FormulaFormatException("The tokens are not valid!");
+                }
+
+                if (formulaTokensList[i].Equals("(")){
+                    numOfLeftParentheses++;
+                }
+                if (formulaTokensList[i].Equals(")"))
+                {
+                    numOfRightParentheses++;
+                }
+                if(numOfRightParentheses > numOfLeftParentheses)
+                {
+                    throw new FormulaFormatException("The number of right parentheses should not " +
+                        "be greater than that of left parentheses!");
+                }
+
+                if((formulaTokensList[i].Equals("(") || formulaTokensList[i].isOperator() )&& i+1 <= formulaTokensList.Count())
+                {
+                    if(!(!formulaTokensList[i+1].isNonNegativeDoulbe() || !formulaTokensList[i+1].isVariable()
+                        || !formulaTokensList[i + 1].Equals("(")))
+                    {
+                        throw new FormulaFormatException("Wrong parenthesis/operator following!");
+                    }
+                }
+
+                if ((formulaTokensList[i].isNonNegativeDoulbe() || formulaTokensList[i].isVariable()
+                        || formulaTokensList[i].Equals(")")) && i + 1 < formulaTokensList.Count())
+                {
+                    if (!(!formulaTokensList[i + 1].isOperator() || !formulaTokensList[i + 1].Equals(")"))) //if statement
+                    {
+                        throw new FormulaFormatException("Wrong extra following!");
+                    }
+                }
+            }
+
+            if(numOfLeftParentheses != numOfRightParentheses)
+            {
+                throw new FormulaFormatException("The parentheses are not balanced!");
+            }
+
+            //create a normalized formula
+            normalizedFormula = new List<string>();
+            foreach(string formulaToken in formulaTokensList)
+            {
+                if (formulaToken.isVariable())
+                {
+                    normalizedFormula.Add(normalize(formulaToken));
+                }
+                else
+                {
+                    normalizedFormula.Add(formulaToken);
+                }
             }
         }
 
@@ -352,11 +461,11 @@ namespace SpreadsheetUtilities
         public IEnumerable<String> GetVariables()
         {
             HashSet<String> variables = new HashSet<string>();
-            foreach(string tokens in normalizedVariables)
+            foreach (string token in normalizedFormula)
             {
-                if (! variables.Contains(tokens))
+                if (token.isVariable() && !variables.Contains(token))
                 {
-                    variables.Add(tokens);
+                    variables.Add(token);
                 }
             }
             return variables;
@@ -372,9 +481,15 @@ namespace SpreadsheetUtilities
         /// new Formula("x + y", N, s => true).ToString() should return "X+Y"
         /// new Formula("x + Y").ToString() should return "x+Y"
         /// </summary>
-        public override string ToString()//?????
+        public override string ToString()
         {
-            return null;
+            string nFormula = "";
+
+            foreach(string token in normalizedFormula)
+            {
+                nFormula += token;
+            }
+            return nFormula;
         }
 
         /// <summary>
@@ -397,10 +512,32 @@ namespace SpreadsheetUtilities
         /// new Formula("x1+y2").Equals(new Formula("y2+x1")) is false
         /// new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
         /// </summary>
-        public override bool Equals(object obj)//do i need to write a new method to check if an object is a formula or not
-                                               //?????????
+        public override bool Equals(object obj)
         {
-            return false;
+            if(obj == null || obj != (Formula)obj)//how to know if a obj is a formula or not???????
+            {
+                return false;
+            }
+
+            Formula objFormula = (Formula)obj;//?????
+
+            foreach(string token in normalizedFormula)
+            {
+                
+                if (token.isNonNegativeDoulbe()&&Double.Parse(token).ToString() != Double.Parse(token).ToString())////Check if numeric tokens are equal. //obj token???
+                {
+                    return false;
+                }
+                else if(token.isVariable()&& !token.Equals(token))//Check if variable tokens are equal.   //obj token????
+                {
+                    return false;
+                }
+                else if (!token.Equals(token))//obj token????
+                {
+                    return false;
+                }
+            }
+            return true;
         }
 
         /// <summary>
@@ -408,9 +545,16 @@ namespace SpreadsheetUtilities
         /// Note that if both f1 and f2 are null, this method should return true.  If one is
         /// null and one is not, this method should return false.
         /// </summary>
-        public static bool operator ==(Formula f1, Formula f2)//how to know if a formula is null or not, since we
-                                                              //cannot use Equals(null)?????????
+        public static bool operator ==(Formula f1, Formula f2)
         {
+            if(f1 == null && f2 == null)
+            {
+                return true;
+            }
+            else if (f1.Equals(f2))
+            {
+                return true;
+            }
             return false;
         }
 
@@ -421,8 +565,19 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
-
-            return false;
+            if (f1 == null && f2 == null)
+            {
+                return false;
+            }
+            else if((f1 == null && f2 != null) || (f1 != null && f2 == null))
+            {
+                return true;
+            }
+            else if (f1.Equals(f2))
+            {
+                return false;
+            }
+            return true;
         }
 
         /// <summary>
@@ -432,7 +587,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override int GetHashCode()//??????
         {
-            return 0;
+            return this.ToString().GetHashCode();
         }
 
         /// <summary>
@@ -458,7 +613,7 @@ namespace SpreadsheetUtilities
             // Enumerate matching tokens that don't consist solely of white space.
             foreach (String s in Regex.Split(formula, pattern, RegexOptions.IgnorePatternWhitespace))
             {
-                if (!Regex.IsMatch(s, @"^\s*$", RegexOptions.Singleline))//???
+                if (!Regex.IsMatch(s, @"^\s*$", RegexOptions.Singleline))
                 {
                     yield return s;
                 }
