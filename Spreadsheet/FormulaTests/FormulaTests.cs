@@ -1,5 +1,6 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetUtilities;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -138,5 +139,89 @@ namespace FormulaTests
 
             Assert.IsTrue(f1 != nullF2);
         }
+
+        /// <summary>
+        /// A function that has a string prameter and returns a double
+        /// </summary>
+        /// <param name="variableName">
+        /// a string 
+        /// </param>
+        /// <returns>If found, return a double; if not, throw an exception</returns>
+        static double searchForAValue(string variableName)
+        {
+            if (variableName.Equals("x"))
+            {
+                return 2;
+            }
+            else if (variableName.Equals("X"))
+            {
+                return 4;
+            }
+            throw new ArgumentException("No such variable!");
+
+        }
+
+        
+        
+        [TestMethod]
+        public void test_variableAddDouble()
+        {
+            // "x" is 2, "X" is 4, and N is a method that converts all the letters 
+            // in a string to upper case
+            Formula f1 = new Formula("x+7", s => s.ToUpper(), s => true);
+            Assert.AreEqual((double)11, f1.Evaluate(searchForAValue));
+
+            Formula f2 = new Formula("x+7");
+            Assert.AreEqual((double)9, f2.Evaluate(searchForAValue));
+        }
+
+        /// Given a variable symbol as its parameter, lookup returns the variable's value 
+        /// (if it has one) or throws an ArgumentException (otherwise).
+        /// 
+
+        [TestMethod]
+        public void twoNumsPlusTest()
+        {
+            Formula f = new Formula("5 + 4");
+            Assert.AreEqual((double)9, f.Evaluate(null));
+        }
+
+        [TestMethod]
+        public void twoNumsMinusTest()
+        {
+            Formula f = new Formula("5 - 4");
+            Assert.AreEqual((double)1, f.Evaluate(null));
+        }
+
+        [TestMethod]
+        public void twoNumsMultiplicationTest()
+        {
+            Formula f = new Formula("5 * 4");
+            Assert.AreEqual((double)20, f.Evaluate(null));
+        }
+
+        //static void twoNumsDivisionTest()
+        //{
+        //    if (Evaluator.Evaluate("6/2", null) == 3)
+        //    {
+        //        Console.WriteLine("6 / 2 = 3 !");
+        //    }
+        //}
+
+        //static void parenthesesTest()
+        //{
+        //    if (Evaluator.Evaluate("6/(1+1)", null) == 3)
+        //    {
+        //        Console.WriteLine("6 / (1+1) = 3 !");
+        //    }
+        //}
+
+        //static void orderOfOperationTest()
+        //{
+        //    if (Evaluator.Evaluate("2 + 4 * 5", null) == 22)
+        //    {
+        //        Console.WriteLine("2 + 4 * 5 = 22 !");
+        //    }
+        //}
     }
 }

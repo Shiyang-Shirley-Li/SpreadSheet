@@ -223,6 +223,44 @@ namespace SpreadsheetUtilities
         }
 
         /// <summary>
+        ///A helper method for "If + or - or / or * is at the top of the operator stack, 
+        ///pop the value stack twice and the operator stack once." case, in order to avoid reuse of code
+        /// </summary>
+        /// <param name="operatorStack">stack with string operators in it</param>
+        /// <param name="valueStack">stack with integers in it</param>
+        private static void operatorWithPopValStackTwice(Stack<string> operatorStack, Stack<double> valueStack)
+        {
+            double secondVal = valueStack.Pop();
+            double firstVal = valueStack.Pop();
+            double currentResult = 0;
+            if (operatorStack.Peek().Equals("+"))
+            {
+                currentResult = firstVal + secondVal;
+            }
+            else if (operatorStack.Peek().Equals("-"))
+            {
+                currentResult = firstVal - secondVal;
+            }
+            else if (operatorStack.Peek().Equals("*"))
+            {
+                currentResult = firstVal * secondVal;
+            }
+            else if (operatorStack.Peek().Equals("/"))
+            {
+                if (secondVal == 0)
+                {
+                    throw new ArgumentException("A division by zero occurs.");
+                }
+                else
+                {
+                    currentResult = firstVal / secondVal;
+                }
+            }
+            valueStack.Push(currentResult);
+            operatorStack.Pop();
+        }
+
+        /// <summary>
         /// Evaluates this Formula, using the lookup delegate to determine the values of
         /// variables.  When a variable symbol v needs to be determined, it should be looked up
         /// via lookup(normalize(v)). (Here, normalize is the normalizer that was passed to 
@@ -245,205 +283,126 @@ namespace SpreadsheetUtilities
         /// </summary>
         public object Evaluate(Func<string, double> lookup)
         {
-            return null;
-            //string[] substrings = Regex.Split(expression, "(\\()|(\\))|(-)|(\\+)|(\\*)|(/)");
+            Stack<double> valueStack = new Stack<double>();
+            Stack<string> operatorStack = new Stack<string>();
+            double finalResult = 0;
 
-            //List<string> subStringsList = new List<string>(substrings);//change the string array to list, so that we can modify
+            foreach (string token in normalizedFormula)
+            {
+                //when the token is double or a variable
+                if (token.isDoulbe() || token.isVariable())
+                {
+                    double number;
+                    if (token.isDoulbe())//if token is number string, convert it to double
+                    {
+                        number = Double.Parse(token);
+                    }
+                    else//if token is variable string, use the looked-up value of the token
+                    {
+                        number = lookup(token);//??????????????????????????????????????
+                    }
 
-            //subStringsList.RemoveAll(isEmpty);//remove empty strings mixed in
+                    if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
+                    {
+                        double currentVal = valueStack.Pop();
+                        string currentOperator = operatorStack.Pop();
 
-            ////check if all the tokens are legal
-            //foreach (string token in subStringsList)
-            //{
-            //    if (!(!token.Equals("(") || !token.Equals(")") || !token.Equals("+") || !token.Equals("-") || !token.Equals("*") || !token.Equals("/") || !token.Equals("^[a-zA-Z]+[0-9]+$") || !token.Equals("[0-9]+")))
-            //    {
-            //        throw new ArgumentException();
-            //    }
-            //}
+                        if (currentOperator.Equals("*"))
+                        {
+                            double currentResult = currentVal * number;
+                            valueStack.Push(currentResult);
+                        }
+                        else if (number == 0)
+                        {
+                            new FormulaError("A division by zero occurs.");//??????
+                        }
+                        else
+                        {
+                            double currentResult = currentVal / number;
+                            valueStack.Push(currentResult);
+                        }
 
-            //Stack<int> valueStack = new Stack<int>();
-            //Stack<string> operatorStack = new Stack<string>();
-            //int finalResult = 0;
-            //Regex intNumbers = new Regex("^[0-9]+$");
-            //Regex variableFormat = new Regex("^[a-zA-Z]+[0-9]+$");
+                    }
+                    else
+                    {
+                        valueStack.Push(number);
+                    }
+                }
 
-            //foreach (string whiteSpaceToken in subStringsList)
-            //{
-            //    string token = whiteSpaceToken.Trim();//delete all the possible space
+                //when the token is + or -
+                else if ((token.Equals("+") || token.Equals("-")))
+                {
+                    if (valueStack.Count == 1)
+                    {
+                        operatorStack.Push(token);
+                    }
+                    else
+                    {
+                        if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+                        {
+                            operatorWithPopValStackTwice(operatorStack, valueStack);
+                        }
+                        else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+                        {
+                            operatorWithPopValStackTwice(operatorStack, valueStack);
+                        }
+                        operatorStack.Push(token);
+                    }
+                }
 
-            //    //when the token is integer or a variable
-            //    if (intNumbers.IsMatch(token) || variableFormat.IsMatch(token))
-            //    {
-            //        int t;
-            //        if (intNumbers.IsMatch(token))//if token is number string, convert it to integer
-            //        {
-            //            t = Int32.Parse(token);
-            //        }
-            //        else//if token is variable string, use the looked-up value of the token
-            //        {
-            //            t = variableEvaluator(token);
-            //        }
+                //when the token is * or / or (
+                else if (token.Equals("*") || token.Equals("/") || token.Equals("("))
+                {
+                    operatorStack.Push(token);
+                }
 
-            //        if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
-            //        {
-            //            if (valueStack.Count == 0)
-            //            {
-            //                throw new ArgumentException("The value stack is empty, when * or / is at the top");
-            //            }
-            //            else
-            //            {
-            //                int currentVal = valueStack.Pop();
-            //                string currentOperator = operatorStack.Pop();
+                //when the tooken is )
+                else if (token.Equals(")"))
+                {
+                    if (operatorStack.Count < 0 && valueStack.Count < 2)
+                    {
+                        throw new ArgumentException("No operator for more than two numbers");
+                    }
+                    else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+                    {
+                        operatorWithPopValStackTwice(operatorStack, valueStack);
+                    }
 
-            //                if (currentOperator.Equals("*"))
-            //                {
-            //                    int currentResult = currentVal * t;
-            //                    valueStack.Push(currentResult);
-            //                }
-            //                else if (t == 0)
-            //                {
-            //                    throw new ArgumentException("A division by zero occurs.");
-            //                }
-            //                else
-            //                {
-            //                    int currentResult = currentVal / t;
-            //                    valueStack.Push(currentResult);
-            //                }
-            //            }
-            //        }
-            //        else
-            //        {
-            //            valueStack.Push(t);
-            //        }
-            //    }
+                    operatorStack.Pop();
+                }
 
-            //    //when the token is + or -
-            //    else if ((token.Equals("+") || token.Equals("-")))
-            //    {
+                if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
+                {
+                    if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+                    {
+                        operatorWithPopValStackTwice(operatorStack, valueStack);
+                    }
+                }
+            }
 
-            //        if (valueStack.Count <= 0)
-            //        {
-            //            throw new ArgumentException("Nothing to plus");
-            //        }
-            //        else if (valueStack.Count == 1)
-            //        {
-            //            operatorStack.Push(token);
-            //        }
-            //        else
-            //        {
-            //            if (operatorStack.Count < 0)
-            //            {
-            //                throw new ArgumentException("No operator for more than two numbers");
-            //            }
-            //            else
-            //            {
-            //                if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
-            //                {
-            //                    operatorWithPopValStackTwice(operatorStack, valueStack);
-            //                }
-            //                else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
-            //                {
-            //                    operatorWithPopValStackTwice(operatorStack, valueStack);
-            //                }
-            //                operatorStack.Push(token);
-            //            }
-            //        }
-            //    }
-
-            //    //when the token is * or / or (
-            //    else if (token.Equals("*") || token.Equals("/") || token.Equals("("))
-            //    {
-            //        operatorStack.Push(token);
-            //    }
-
-            //    //when the tooken is )
-            //    else if (token.Equals(")"))
-            //    {
-            //        if (valueStack.Count <= 0)
-            //        {
-            //            throw new ArgumentException("Nothing to caculate");
-            //        }
-            //        else
-            //        {
-            //            if (operatorStack.Count < 0 && valueStack.Count < 2)
-            //            {
-            //                throw new ArgumentException("No operator for more than two numbers");
-            //            }
-            //            else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
-            //            {
-            //                operatorWithPopValStackTwice(operatorStack, valueStack);
-            //            }
-            //        }
-            //        if (operatorStack.Count == 0)
-            //        {
-            //            throw new ArgumentException("A ( isn't found where expected");
-            //        }
-            //        else if (operatorStack.Count != 0)
-            //        {
-            //            if (!operatorStack.Peek().Equals("("))
-            //            {
-            //                throw new ArgumentException("A ( isn't found where expected");
-            //            }
-            //            else
-            //            {
-            //                operatorStack.Pop();
-            //            }
-            //        }
-
-            //        if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
-            //        {
-            //            if (valueStack.Count <= 0)
-            //            {
-            //                throw new ArgumentException("Nothing to caculate");
-            //            }
-            //            else
-            //            {
-            //                if (operatorStack.Count < 0 && valueStack.Count < 2)
-            //                {
-            //                    throw new ArgumentException("No operator for more than two numbers");
-            //                }
-            //                else
-            //                {
-            //                    if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
-            //                    {
-            //                        operatorWithPopValStackTwice(operatorStack, valueStack);
-            //                    }
-            //                }
-            //            }
-            //        }
-            //    }
-            //}
-            ////When the last token has been processed
-            //if (operatorStack.Count == 0 && valueStack.Count == 1)
-            //{
-            //    finalResult = valueStack.Pop();
-            //}
-            //else if (operatorStack.Count == 0 && valueStack.Count != 1)
-            //{
-            //    throw new ArgumentException();
-            //}
-            //else if (operatorStack.Count != 0)
-            //{
-            //    if (operatorStack.Count == 1 && (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-")) && valueStack.Count == 2)
-            //    {
-            //        int val1 = valueStack.Pop();
-            //        int val2 = valueStack.Pop();
-            //        string currentOperator = operatorStack.Pop();
-            //        if (currentOperator.Equals("+"))
-            //        {
-            //            finalResult = val2 + val1;
-            //        }
-            //        else if (currentOperator.Equals("-"))
-            //        {
-            //            finalResult = val2 - val1;
-            //        }
-            //    }
-            //    else
-            //    {
-            //        throw new ArgumentException();
-            //    }
-            //}
-            //return finalResult;
+            //When the last token has been processed
+            if (operatorStack.Count == 0 && valueStack.Count == 1)
+            {
+                finalResult = valueStack.Pop();
+            }
+            else if (operatorStack.Count != 0)
+            {
+                if (operatorStack.Count == 1 && (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-")) && valueStack.Count == 2)
+                {
+                    double val1 = valueStack.Pop();
+                    double val2 = valueStack.Pop();
+                    string currentOperator = operatorStack.Pop();
+                    if (currentOperator.Equals("+"))
+                    {
+                        finalResult = val2 + val1;
+                    }
+                    else if (currentOperator.Equals("-"))
+                    {
+                        finalResult = val2 - val1;
+                    }
+                }
+            }
+            return finalResult;
         }
 
         /// <summary>
