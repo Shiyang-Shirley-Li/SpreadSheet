@@ -67,6 +67,7 @@ namespace SpreadsheetUtilities
             }
             return false;
         }
+
         /// <summary>
         /// A method to check if a string is a double
         /// </summary>
@@ -85,6 +86,7 @@ namespace SpreadsheetUtilities
             return false;
         }
     }
+
     /// <summary>
     /// Represents formulas written in standard infix notation using standard precedence
     /// rules.  The allowed symbols are non-negative numbers written using double-precision 
@@ -176,7 +178,7 @@ namespace SpreadsheetUtilities
                     throw new FormulaFormatException("The starting token is wrong!");
                 }
 
-                if (!(formulaTokensList[formulaTokensList.Count() - 1].isDoulbe() 
+                if (!(formulaTokensList[formulaTokensList.Count() - 1].isDoulbe()
                     || formulaTokensList[formulaTokensList.Count() - 1].isVariable()
                     || formulaTokensList[formulaTokensList.Count() - 1].Equals(")")))
                 {
@@ -326,7 +328,8 @@ namespace SpreadsheetUtilities
                         }
                     }
 
-                    if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
+                    if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*")
+                        || operatorStack.Peek().Equals("/")))
                     {
                         double currentVal = valueStack.Pop();
                         string currentOperator = operatorStack.Pop();
@@ -366,7 +369,7 @@ namespace SpreadsheetUtilities
                             Object divideByZeroErr = operatorWithPopValStackTwice(operatorStack, valueStack);
                             if (divideByZeroErr is FormulaError)
                             {
-                                return divideByZeroErr;
+                                return divideByZeroErr;//return divide by zero FormulaError for the helper method
                             }
                         }
                         else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
@@ -393,7 +396,7 @@ namespace SpreadsheetUtilities
                     if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
                     {
                         Object divideByZeroErr = operatorWithPopValStackTwice(operatorStack, valueStack);
-                        if(divideByZeroErr is FormulaError)
+                        if (divideByZeroErr is FormulaError)
                         {
                             return divideByZeroErr;
                         }
@@ -403,7 +406,8 @@ namespace SpreadsheetUtilities
                         operatorStack.Pop();
                     }
 
-                    if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
+                    if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*")
+                        || operatorStack.Peek().Equals("/")))
                     {
                         if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
                         {
@@ -423,7 +427,7 @@ namespace SpreadsheetUtilities
             }
             else if (operatorStack.Count != 0)
             {
-                if (operatorStack.Count == 1 && (operatorStack.Peek().Equals("+") 
+                if (operatorStack.Count == 1 && (operatorStack.Peek().Equals("+")
                     || operatorStack.Peek().Equals("-")) && valueStack.Count == 2)
                 {
                     double val1 = valueStack.Pop();
@@ -608,7 +612,6 @@ namespace SpreadsheetUtilities
                     yield return s;
                 }
             }
-
         }
     }
 

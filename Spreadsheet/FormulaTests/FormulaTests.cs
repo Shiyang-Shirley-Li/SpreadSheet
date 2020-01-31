@@ -120,8 +120,6 @@ namespace FormulaTests
             Assert.AreEqual("x+Y", new Formula("x + Y").ToString());
         }
 
-
-
         [TestMethod]
         public void test_Equals()
         {
@@ -208,7 +206,6 @@ namespace FormulaTests
             throw new ArgumentException("No such variable!");
 
         }
-
 
         [TestMethod]
         public void test_variableAddDouble()
