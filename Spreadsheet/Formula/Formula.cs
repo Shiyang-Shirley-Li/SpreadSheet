@@ -157,13 +157,9 @@ namespace SpreadsheetUtilities
                     formulaTokensList[i] = normalize(formulaTokensList[i]);
                 }
 
-                if (formulaTokensList[i].isDoulbe())
-                {
-                    formulaTokensList[i] = Double.Parse(formulaTokensList[i]).ToString();
-                }
                 //Syntactical correction
                 if (!(!formulaTokensList[0].isDoulbe() || !formulaTokensList[0].isVariable()
-                || !formulaTokensList[0].Equals("(")))//if statement??????
+                || !formulaTokensList[0].Equals("(")))//??????if 
                 {
                     throw new FormulaFormatException("The starting token is wrong!");
                 }
@@ -194,10 +190,10 @@ namespace SpreadsheetUtilities
                         "be greater than that of left parentheses!");
                 }
 
-                if ((formulaTokensList[i].Equals("(") || formulaTokensList[i].isOperator()) && i + 1 <= formulaTokensList.Count())
+                if ((formulaTokensList[i].Equals("(") || formulaTokensList[i].isOperator()) && i + 1 < formulaTokensList.Count())
                 {
                     if (!(!formulaTokensList[i + 1].isDoulbe() || !formulaTokensList[i + 1].isVariable()
-                        || !formulaTokensList[i + 1].Equals("(")))
+                        || !formulaTokensList[i + 1].Equals("(")))//if statement?????????????
                     {
                         throw new FormulaFormatException("Wrong parenthesis/operator following!");
                     }
@@ -206,10 +202,15 @@ namespace SpreadsheetUtilities
                 if ((formulaTokensList[i].isDoulbe() || formulaTokensList[i].isVariable()
                         || formulaTokensList[i].Equals(")")) && i + 1 < formulaTokensList.Count())
                 {
-                    if (!(!formulaTokensList[i + 1].isOperator() || !formulaTokensList[i + 1].Equals(")")))
+                    if (!(!formulaTokensList[i + 1].isOperator() || !formulaTokensList[i + 1].Equals(")")))//if statement?????????????
                     {
                         throw new FormulaFormatException("Wrong extra following!");
                     }
+                }
+
+                if (formulaTokensList[i].isDoulbe())
+                {
+                    formulaTokensList[i] = Double.Parse(formulaTokensList[i]).ToString();
                 }
             }
 
@@ -217,6 +218,7 @@ namespace SpreadsheetUtilities
             {
                 throw new FormulaFormatException("The parentheses are not balanced!");
             }
+
 
             //create a normalized formula
             normalizedFormula = formulaTokensList;
