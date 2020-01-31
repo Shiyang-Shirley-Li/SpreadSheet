@@ -37,7 +37,7 @@ namespace SpreadsheetUtilities
         /// <returns>true if the string is in right format; otherwise, return false</returns>
         public static Boolean isVariable(this string variable)
         {
-            Regex variableFormat = new Regex("^([a-zA-Z]|[/_])[0-9a-zA-Z]*$");
+            Regex variableFormat = new Regex("^([a-zA-Z]|[_])[0-9a-zA-Z]*$");
             if (variableFormat.IsMatch(variable))
             {
                 return true;
@@ -158,8 +158,8 @@ namespace SpreadsheetUtilities
                 }
 
                 //Syntactical correction
-                if (!(!formulaTokensList[0].isDoulbe() || !formulaTokensList[0].isVariable()
-                || !formulaTokensList[0].Equals("(")))//??????if 
+                if (!(formulaTokensList[0].isDoulbe() || formulaTokensList[0].isVariable()
+                || formulaTokensList[0].Equals("(")))//????
                 {
                     throw new FormulaFormatException("The starting token is wrong!");
                 }
@@ -192,8 +192,8 @@ namespace SpreadsheetUtilities
 
                 if ((formulaTokensList[i].Equals("(") || formulaTokensList[i].isOperator()) && i + 1 < formulaTokensList.Count())
                 {
-                    if (!(!formulaTokensList[i + 1].isDoulbe() || !formulaTokensList[i + 1].isVariable()
-                        || !formulaTokensList[i + 1].Equals("(")))//if statement?????????????
+                    if (!(formulaTokensList[i + 1].isDoulbe() || formulaTokensList[i + 1].isVariable()
+                        || formulaTokensList[i + 1].Equals("(")))//if statement?????????????
                     {
                         throw new FormulaFormatException("Wrong parenthesis/operator following!");
                     }
@@ -202,7 +202,7 @@ namespace SpreadsheetUtilities
                 if ((formulaTokensList[i].isDoulbe() || formulaTokensList[i].isVariable()
                         || formulaTokensList[i].Equals(")")) && i + 1 < formulaTokensList.Count())
                 {
-                    if (!(!formulaTokensList[i + 1].isOperator() || !formulaTokensList[i + 1].Equals(")")))//if statement?????????????
+                    if (!(formulaTokensList[i + 1].isOperator() || formulaTokensList[i + 1].Equals(")")))//if statement?????????????
                     {
                         throw new FormulaFormatException("Wrong extra following!");
                     }
@@ -301,7 +301,14 @@ namespace SpreadsheetUtilities
                     }
                     else//if token is variable string, use the looked-up value of the token
                     {
-                        number = lookup(token);
+                        try
+                        {
+                            number = lookup(token);
+                        }
+                        catch (ArgumentException)
+                        {
+                            return new FormulaError("No variables found in my library!");
+                        }
                     }
 
                     if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
@@ -322,7 +329,7 @@ namespace SpreadsheetUtilities
                             }
                             else if (number == 0)
                             {
-                                //formula error????????????????
+                            return new FormulaError("Cannot divide by 0!");
                             }
                             else
                             {
@@ -555,7 +562,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            if (f1 == null && f2 == null)
+            if (object.ReferenceEquals(f1, null) && object.ReferenceEquals(f2, null))
             {
                 return true;
             }
@@ -573,11 +580,11 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator !=(Formula f1, Formula f2)
         {
-            if (f1 == null && f2 == null)
+            if (object.ReferenceEquals(f1, null) && object.ReferenceEquals(f2, null))
             {
                 return false;
             }
-            else if ((f1 == null && f2 != null) || (f1 != null && f2 == null))
+            else if ((object.ReferenceEquals(f1, null) && !object.ReferenceEquals(f2, null)) || (!object.ReferenceEquals(f1, null) && object.ReferenceEquals(f2, null)))
             {
                 return true;
             }

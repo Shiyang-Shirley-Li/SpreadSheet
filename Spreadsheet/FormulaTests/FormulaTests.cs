@@ -183,6 +183,11 @@ namespace FormulaTests
 
             Formula f2 = new Formula("x+7");
             Assert.AreEqual((double)9, f2.Evaluate(searchForAValue));
+
+            //FormulaError when the variable is not found in the lookup
+            Formula f3 = new Formula("a + 7");
+            Assert.AreEqual("No variables found in my library!", ((FormulaError)f3.Evaluate(searchForAValue)).Reason);
+            
         }
 
         /// Given a variable symbol as its parameter, lookup returns the variable's value 
@@ -215,6 +220,13 @@ namespace FormulaTests
         {
             Formula f = new Formula("6/2");
             Assert.AreEqual((double)3, f.Evaluate(null));
+        }
+
+        [TestMethod]
+        public void divideByZeroTest()
+        {
+            Formula f = new Formula("6/0");
+            Assert.AreEqual("Cannot divide by 0!", ((FormulaError)f.Evaluate(null)).Reason);//?????
         }
 
         [TestMethod]
