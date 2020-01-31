@@ -67,6 +67,17 @@ namespace FormulaTests
         }
 
         [TestMethod]
+        public void test_GetDuplicatedVariables()
+        {
+            Formula f = new Formula("X1 + X1 + Y2 / Y2");
+            IEnumerator<string> variables = f.GetVariables().GetEnumerator();
+            Assert.IsTrue(variables.MoveNext());
+            Assert.AreEqual("X1", variables.Current);
+            Assert.IsTrue(variables.MoveNext());
+            Assert.AreEqual("Y2", variables.Current);
+        }
+
+        [TestMethod]
         public void test_toString()
         {
             // new Formula("x + y", N, s => true).ToString() should return "X+Y" 
@@ -161,8 +172,7 @@ namespace FormulaTests
 
         }
 
-        
-        
+       
         [TestMethod]
         public void test_variableAddDouble()
         {

@@ -396,7 +396,7 @@ namespace SpreadsheetUtilities
                     //{
                     //    throw new ArgumentException("A ( isn't found where expected");
                     //}
-                    else if (operatorStack.Count != 0)
+                    if (operatorStack.Count != 0)
                     {
                         //if (!operatorStack.Peek().Equals("("))
                         //{
@@ -591,7 +591,7 @@ namespace SpreadsheetUtilities
         /// case that f1.GetHashCode() == f2.GetHashCode().  Ideally, the probability that two 
         /// randomly-generated unequal Formulae have the same hash code should be extremely small.
         /// </summary>
-        public override int GetHashCode()//??????
+        public override int GetHashCode()
         {
             return this.ToString().GetHashCode();
         }
