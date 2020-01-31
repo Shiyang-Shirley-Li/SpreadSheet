@@ -164,8 +164,8 @@ namespace SpreadsheetUtilities
                     throw new FormulaFormatException("The starting token is wrong!");
                 }
 
-                if (!(!formulaTokensList[0].isDoulbe() || !formulaTokensList[0].isVariable()
-                    || !formulaTokensList[0].Equals(")")))
+                if (!(formulaTokensList[formulaTokensList.Count()-1].isDoulbe() || formulaTokensList[formulaTokensList.Count() - 1].isVariable()
+                    || formulaTokensList[formulaTokensList.Count() - 1].Equals(")")))
                 {
                     throw new FormulaFormatException("The ending token is wrong!");
                 }
@@ -230,7 +230,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         /// <param name="operatorStack">stack with string operators in it</param>
         /// <param name="valueStack">stack with integers in it</param>
-        private static void operatorWithPopValStackTwice(Stack<string> operatorStack, Stack<double> valueStack)
+        private static object operatorWithPopValStackTwice(Stack<string> operatorStack, Stack<double> valueStack)
         {
             double secondVal = valueStack.Pop();
             double firstVal = valueStack.Pop();
@@ -251,7 +251,8 @@ namespace SpreadsheetUtilities
             {
                 if (secondVal == 0)
                 {
-                    throw new ArgumentException("A division by zero occurs.");
+                    operatorStack.Pop();
+                    return new FormulaError("");
                 }
                 else
                 {
@@ -260,6 +261,7 @@ namespace SpreadsheetUtilities
             }
             valueStack.Push(currentResult);
             operatorStack.Pop();
+            return null;
         }
 
         /// <summary>

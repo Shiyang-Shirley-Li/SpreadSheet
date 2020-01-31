@@ -38,7 +38,7 @@ namespace FormulaTests
         public void constructorTest()
         {
             Regex oneDigitOneLetter = new Regex("[0-9][A-Za-z]");
-            Formula goodFormula = new Formula("x2+y3", s => s.ToUpper(),isValid);
+            Formula goodFormula = new Formula("x2+y3", s => s.ToUpper(), isValid);
         }
 
         [TestMethod]
@@ -149,6 +149,9 @@ namespace FormulaTests
             Assert.IsFalse(nullF1 != nullF2);
 
             Assert.IsTrue(f1 != nullF2);
+
+            Assert.IsFalse(null == f1);
+            Assert.IsFalse(f1 == null);
         }
 
         /// <summary>
@@ -172,7 +175,7 @@ namespace FormulaTests
 
         }
 
-       
+
         [TestMethod]
         public void test_variableAddDouble()
         {
@@ -187,7 +190,7 @@ namespace FormulaTests
             //FormulaError when the variable is not found in the lookup
             Formula f3 = new Formula("a + 7");
             Assert.AreEqual("No variables found in my library!", ((FormulaError)f3.Evaluate(searchForAValue)).Reason);
-            
+
         }
 
         /// Given a variable symbol as its parameter, lookup returns the variable's value 
@@ -225,7 +228,7 @@ namespace FormulaTests
         [TestMethod]
         public void divideByZeroTest()
         {
-            Formula f = new Formula("6/0");
+            Formula f = new Formula("(5 + 1) / (3 - 3)");
             Assert.AreEqual("Cannot divide by 0!", ((FormulaError)f.Evaluate(null)).Reason);//?????
         }
 
@@ -244,3 +247,4 @@ namespace FormulaTests
         }
     }
 }
+
