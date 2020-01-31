@@ -295,33 +295,39 @@ namespace SpreadsheetUtilities
                     double number;
                     if (token.isDoulbe())//if token is number string, convert it to double
                     {
-                        number = Double.Parse(token);
+                        number = double.Parse(token);
                     }
                     else//if token is variable string, use the looked-up value of the token
                     {
-                        number = lookup(token);//??????????????????????????????????????
+                        number = lookup(token);
                     }
 
                     if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
                     {
-                        double currentVal = valueStack.Pop();
-                        string currentOperator = operatorStack.Pop();
+                        //if (valueStack.Count == 0)
+                        //{
+                        //    throw new ArgumentException("The value stack is empty, when * or / is at the top");
+                        //}
+                        //else
+                        //{
+                            double currentVal = valueStack.Pop();
+                            string currentOperator = operatorStack.Pop();
 
-                        if (currentOperator.Equals("*"))
-                        {
-                            double currentResult = currentVal * number;
-                            valueStack.Push(currentResult);
-                        }
-                        else if (number == 0)
-                        {
-                            new FormulaError("A division by zero occurs.");//??????
-                        }
-                        else
-                        {
-                            double currentResult = currentVal / number;
-                            valueStack.Push(currentResult);
-                        }
-
+                            if (currentOperator.Equals("*"))
+                            {
+                                double currentResult = currentVal * number;
+                                valueStack.Push(currentResult);
+                            }
+                            else if (number == 0)
+                            {
+                                //formula error????????????????
+                            }
+                            else
+                            {
+                                double currentResult = currentVal / number;
+                                valueStack.Push(currentResult);
+                            }
+                        //}
                     }
                     else
                     {
@@ -332,21 +338,33 @@ namespace SpreadsheetUtilities
                 //when the token is + or -
                 else if ((token.Equals("+") || token.Equals("-")))
                 {
+
+                    //if (valueStack.Count <= 0)
+                    //{
+                    //    throw new ArgumentException("Nothing to plus");
+                    //}
                     if (valueStack.Count == 1)
                     {
                         operatorStack.Push(token);
                     }
                     else
                     {
-                        if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
-                        {
-                            operatorWithPopValStackTwice(operatorStack, valueStack);
-                        }
-                        else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
-                        {
-                            operatorWithPopValStackTwice(operatorStack, valueStack);
-                        }
-                        operatorStack.Push(token);
+                        //if (operatorStack.Count < 0)
+                        //{
+                        //    throw new ArgumentException("No operator for more than two numbers");
+                        //}
+                        //else
+                        //{
+                            if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+                            {
+                                operatorWithPopValStackTwice(operatorStack, valueStack);
+                            }
+                            else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+                            {
+                                operatorWithPopValStackTwice(operatorStack, valueStack);
+                            }
+                            operatorStack.Push(token);
+                        //}
                     }
                 }
 
@@ -359,32 +377,69 @@ namespace SpreadsheetUtilities
                 //when the tooken is )
                 else if (token.Equals(")"))
                 {
-                    if (operatorStack.Count < 0 && valueStack.Count < 2)
+                    //if (valueStack.Count <= 0)
+                    //{
+                    //    throw new ArgumentException("Nothing to caculate");
+                    //}
+                    //else
+                    //{
+                        //if (operatorStack.Count < 0 && valueStack.Count < 2)
+                        //{
+                        //    throw new ArgumentException("No operator for more than two numbers");
+                        //}
+                        if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+                        {
+                            operatorWithPopValStackTwice(operatorStack, valueStack);
+                        }
+                    //}
+                    //if (operatorStack.Count == 0)
+                    //{
+                    //    throw new ArgumentException("A ( isn't found where expected");
+                    //}
+                    else if (operatorStack.Count != 0)
                     {
-                        throw new ArgumentException("No operator for more than two numbers");
-                    }
-                    else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
-                    {
-                        operatorWithPopValStackTwice(operatorStack, valueStack);
+                        //if (!operatorStack.Peek().Equals("("))
+                        //{
+                        //    throw new ArgumentException("A ( isn't found where expected");
+                        //}
+                        //else
+                        //{
+                            operatorStack.Pop();
+                        //}
                     }
 
-                    operatorStack.Pop();
-                }
-
-                if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
-                {
-                    if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+                    if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
                     {
-                        operatorWithPopValStackTwice(operatorStack, valueStack);
+                        //if (valueStack.Count <= 0)
+                        //{
+                        //    throw new ArgumentException("Nothing to caculate");
+                        //}
+                        //else
+                        //{
+                            //if (operatorStack.Count < 0 && valueStack.Count < 2)
+                            //{
+                            //    throw new ArgumentException("No operator for more than two numbers");
+                            //}
+                            //else
+                            //{
+                                if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+                                {
+                                    operatorWithPopValStackTwice(operatorStack, valueStack);
+                                }
+                            //}
+                        //}
                     }
                 }
             }
-
             //When the last token has been processed
             if (operatorStack.Count == 0 && valueStack.Count == 1)
             {
                 finalResult = valueStack.Pop();
             }
+            //else if (operatorStack.Count == 0 && valueStack.Count != 1)
+            //{
+            //    throw new ArgumentException();
+            //}
             else if (operatorStack.Count != 0)
             {
                 if (operatorStack.Count == 1 && (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-")) && valueStack.Count == 2)
@@ -401,6 +456,10 @@ namespace SpreadsheetUtilities
                         finalResult = val2 - val1;
                     }
                 }
+                //else
+                //{
+                //    throw new ArgumentException();
+                //}
             }
             return finalResult;
         }

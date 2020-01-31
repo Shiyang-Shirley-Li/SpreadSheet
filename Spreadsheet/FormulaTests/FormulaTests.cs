@@ -200,28 +200,25 @@ namespace FormulaTests
             Assert.AreEqual((double)20, f.Evaluate(null));
         }
 
-        //static void twoNumsDivisionTest()
-        //{
-        //    if (Evaluator.Evaluate("6/2", null) == 3)
-        //    {
-        //        Console.WriteLine("6 / 2 = 3 !");
-        //    }
-        //}
+        [TestMethod]
+        public void twoNumsDivisionTest()
+        {
+            Formula f = new Formula("6/2");
+            Assert.AreEqual((double)3, f.Evaluate(null));
+        }
 
-        //static void parenthesesTest()
-        //{
-        //    if (Evaluator.Evaluate("6/(1+1)", null) == 3)
-        //    {
-        //        Console.WriteLine("6 / (1+1) = 3 !");
-        //    }
-        //}
+        [TestMethod]
+        public void parenthesesTest()
+        {
+            Formula f = new Formula("6*(1+1)");
+            Assert.AreEqual((double)12, f.Evaluate(null));
+        }
 
-        //static void orderOfOperationTest()
-        //{
-        //    if (Evaluator.Evaluate("2 + 4 * 5", null) == 22)
-        //    {
-        //        Console.WriteLine("2 + 4 * 5 = 22 !");
-        //    }
-        //}
+        [TestMethod]
+        public void orderOfOperationTest()
+        {
+            Formula f = new Formula("2 + 4 * 5");
+            Assert.AreEqual((double)22, f.Evaluate(null));
+        }
     }
 }
