@@ -6,6 +6,10 @@ using System.Text.RegularExpressions;
 
 namespace FormulaTests
 {
+    /// <summary>
+    ///This is a test class for Formula and is intended
+    ///to contain all Formula Unit Tests
+    /// </summary>
     [TestClass]
     public class FormulaTests
     {
@@ -23,6 +27,34 @@ namespace FormulaTests
         {
             Regex oneDigitOneLetter = new Regex("^[0-9][A-Za-z]$");
             Formula badFormula = new Formula("x + y3", s => s.ToUpper(), oneDigitOneLetter.IsMatch);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void constructor_EmptyFormulaTest()
+        {
+            Formula badFormula = new Formula("");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void constructor_WrongStartingTokenTest()
+        {
+            Formula badFormula = new Formula("+");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void constructor_WrongEndingTokenTest()
+        {
+            Formula badFormula = new Formula(" 1 + ");
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void constructor_MissingParenthesisTest()
+        {
+            Formula badFormula = new Formula(" ( +");
         }
 
         public bool isValid(string str)
@@ -106,6 +138,9 @@ namespace FormulaTests
 
             // new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")) is true
             Assert.IsTrue(new Formula("2.0 + x7").Equals(new Formula("2.000 + x7")));
+
+            //when the pass in object is null
+            Assert.IsFalse((new Formula("2 + 7").Equals(null)));
         }
 
         [TestMethod]
@@ -114,7 +149,7 @@ namespace FormulaTests
             Formula f1 = new Formula("x1+y2", s => s.ToUpper(), s => true);
             Formula f2 = new Formula("X1  +  Y2");
 
-            Assert.IsTrue(f1.GetHashCode() == f2.GetHashCode()); //is it a good way to test?????
+            Assert.IsTrue(f1.GetHashCode() == f2.GetHashCode());
         }
 
         [TestMethod]
@@ -150,8 +185,7 @@ namespace FormulaTests
 
             Assert.IsTrue(f1 != nullF2);
 
-            Assert.IsFalse(null == f1);
-            Assert.IsFalse(f1 == null);
+            Assert.IsFalse(nullF1 == f1);
         }
 
         /// <summary>
@@ -229,7 +263,10 @@ namespace FormulaTests
         public void divideByZeroTest()
         {
             Formula f = new Formula("(5 + 1) / (3 - 3)");
-            Assert.AreEqual("Cannot divide by 0!", ((FormulaError)f.Evaluate(null)).Reason);//?????
+            Assert.AreEqual("Cannot divide by 0!", ((FormulaError)f.Evaluate(null)).Reason);
+
+            Formula f1 = new Formula("(6+1)/0");
+            Assert.AreEqual("Cannot divide by 0!", ((FormulaError)f1.Evaluate(null)).Reason);
         }
 
         [TestMethod]

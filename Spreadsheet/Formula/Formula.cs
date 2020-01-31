@@ -33,8 +33,12 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// A method to check if a stirng is in right format as defined
         /// </summary>
-        /// <param name="variable">a string that need checking</param>
-        /// <returns>true if the string is in right format; otherwise, return false</returns>
+        /// <param name="variable">
+        /// a string that need checking
+        /// </param>
+        /// <returns>
+        /// true if the string is in right format; otherwise, return false
+        /// </returns>
         public static Boolean isVariable(this string variable)
         {
             Regex variableFormat = new Regex("^([a-zA-Z]|[_])[0-9a-zA-Z]*$");
@@ -48,8 +52,12 @@ namespace SpreadsheetUtilities
         /// <summary>
         /// A method to check if a string is an operotor
         /// </summary>
-        /// <param name="fourOperators">a string that need checking</param>
-        /// <returns>true if the string is an operator; otherwise, return false</returns>
+        /// <param name="fourOperators">
+        /// a string that need checking
+        /// </param>
+        /// <returns>
+        /// true if the string is an operator; otherwise, return false
+        /// </returns>
         public static Boolean isOperator(this string fourOperators)
         {
             if (fourOperators.Equals("+") || fourOperators.Equals("*")
@@ -60,10 +68,14 @@ namespace SpreadsheetUtilities
             return false;
         }
         /// <summary>
-        /// 
+        /// A method to check if a string is a double
         /// </summary>
-        /// <param name="token"></param>
-        /// <returns></returns>
+        /// <param name="token">
+        /// a string that need checking
+        /// </param>
+        /// <returns>
+        /// true if the string is a double; otherwise, return false
+        /// </returns>
         public static Boolean isDoulbe(this string token)
         {
             if (Double.TryParse(token, out double firstResult))
@@ -134,7 +146,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public Formula(String formula, Func<string, string> normalize, Func<string, bool> isValid)
         {
-            List<string> formulaTokensList = GetTokens(formula).ToList();
+            List<string> formulaTokensList = GetTokens(formula).ToList();//change Enumerable to list, in order to use index 
             int numOfLeftParentheses = 0;
             int numOfRightParentheses = 0;
 
@@ -159,12 +171,13 @@ namespace SpreadsheetUtilities
 
                 //Syntactical correction
                 if (!(formulaTokensList[0].isDoulbe() || formulaTokensList[0].isVariable()
-                || formulaTokensList[0].Equals("(")))//????
+                || formulaTokensList[0].Equals("(")))
                 {
                     throw new FormulaFormatException("The starting token is wrong!");
                 }
 
-                if (!(formulaTokensList[formulaTokensList.Count()-1].isDoulbe() || formulaTokensList[formulaTokensList.Count() - 1].isVariable()
+                if (!(formulaTokensList[formulaTokensList.Count() - 1].isDoulbe() 
+                    || formulaTokensList[formulaTokensList.Count() - 1].isVariable()
                     || formulaTokensList[formulaTokensList.Count() - 1].Equals(")")))
                 {
                     throw new FormulaFormatException("The ending token is wrong!");
@@ -193,7 +206,7 @@ namespace SpreadsheetUtilities
                 if ((formulaTokensList[i].Equals("(") || formulaTokensList[i].isOperator()) && i + 1 < formulaTokensList.Count())
                 {
                     if (!(formulaTokensList[i + 1].isDoulbe() || formulaTokensList[i + 1].isVariable()
-                        || formulaTokensList[i + 1].Equals("(")))//if statement?????????????
+                        || formulaTokensList[i + 1].Equals("(")))
                     {
                         throw new FormulaFormatException("Wrong parenthesis/operator following!");
                     }
@@ -202,7 +215,7 @@ namespace SpreadsheetUtilities
                 if ((formulaTokensList[i].isDoulbe() || formulaTokensList[i].isVariable()
                         || formulaTokensList[i].Equals(")")) && i + 1 < formulaTokensList.Count())
                 {
-                    if (!(formulaTokensList[i + 1].isOperator() || formulaTokensList[i + 1].Equals(")")))//if statement?????????????
+                    if (!(formulaTokensList[i + 1].isOperator() || formulaTokensList[i + 1].Equals(")")))
                     {
                         throw new FormulaFormatException("Wrong extra following!");
                     }
@@ -252,7 +265,7 @@ namespace SpreadsheetUtilities
                 if (secondVal == 0)
                 {
                     operatorStack.Pop();
-                    return new FormulaError("");
+                    return new FormulaError("Cannot divide by 0!");
                 }
                 else
                 {
@@ -315,30 +328,23 @@ namespace SpreadsheetUtilities
 
                     if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
                     {
-                        //if (valueStack.Count == 0)
-                        //{
-                        //    throw new ArgumentException("The value stack is empty, when * or / is at the top");
-                        //}
-                        //else
-                        //{
-                            double currentVal = valueStack.Pop();
-                            string currentOperator = operatorStack.Pop();
+                        double currentVal = valueStack.Pop();
+                        string currentOperator = operatorStack.Pop();
 
-                            if (currentOperator.Equals("*"))
-                            {
-                                double currentResult = currentVal * number;
-                                valueStack.Push(currentResult);
-                            }
-                            else if (number == 0)
-                            {
+                        if (currentOperator.Equals("*"))
+                        {
+                            double currentResult = currentVal * number;
+                            valueStack.Push(currentResult);
+                        }
+                        else if (number == 0)
+                        {
                             return new FormulaError("Cannot divide by 0!");
-                            }
-                            else
-                            {
-                                double currentResult = currentVal / number;
-                                valueStack.Push(currentResult);
-                            }
-                        //}
+                        }
+                        else
+                        {
+                            double currentResult = currentVal / number;
+                            valueStack.Push(currentResult);
+                        }
                     }
                     else
                     {
@@ -349,33 +355,29 @@ namespace SpreadsheetUtilities
                 //when the token is + or -
                 else if ((token.Equals("+") || token.Equals("-")))
                 {
-
-                    //if (valueStack.Count <= 0)
-                    //{
-                    //    throw new ArgumentException("Nothing to plus");
-                    //}
                     if (valueStack.Count == 1)
                     {
                         operatorStack.Push(token);
                     }
                     else
                     {
-                        //if (operatorStack.Count < 0)
-                        //{
-                        //    throw new ArgumentException("No operator for more than two numbers");
-                        //}
-                        //else
-                        //{
-                            if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+                        if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+                        {
+                            Object divideByZeroErr = operatorWithPopValStackTwice(operatorStack, valueStack);
+                            if (divideByZeroErr is FormulaError)
                             {
-                                operatorWithPopValStackTwice(operatorStack, valueStack);
+                                return divideByZeroErr;
                             }
-                            else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+                        }
+                        else if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+                        {
+                            Object divideByZeroErr = operatorWithPopValStackTwice(operatorStack, valueStack);
+                            if (divideByZeroErr is FormulaError)
                             {
-                                operatorWithPopValStackTwice(operatorStack, valueStack);
+                                return divideByZeroErr;
                             }
-                            operatorStack.Push(token);
-                        //}
+                        }
+                        operatorStack.Push(token);
                     }
                 }
 
@@ -388,57 +390,29 @@ namespace SpreadsheetUtilities
                 //when the tooken is )
                 else if (token.Equals(")"))
                 {
-                    //if (valueStack.Count <= 0)
-                    //{
-                    //    throw new ArgumentException("Nothing to caculate");
-                    //}
-                    //else
-                    //{
-                        //if (operatorStack.Count < 0 && valueStack.Count < 2)
-                        //{
-                        //    throw new ArgumentException("No operator for more than two numbers");
-                        //}
-                        if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+                    if (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-"))
+                    {
+                        Object divideByZeroErr = operatorWithPopValStackTwice(operatorStack, valueStack);
+                        if(divideByZeroErr is FormulaError)
                         {
-                            operatorWithPopValStackTwice(operatorStack, valueStack);
+                            return divideByZeroErr;
                         }
-                    //}
-                    //if (operatorStack.Count == 0)
-                    //{
-                    //    throw new ArgumentException("A ( isn't found where expected");
-                    //}
+                    }
                     if (operatorStack.Count != 0)
                     {
-                        //if (!operatorStack.Peek().Equals("("))
-                        //{
-                        //    throw new ArgumentException("A ( isn't found where expected");
-                        //}
-                        //else
-                        //{
-                            operatorStack.Pop();
-                        //}
+                        operatorStack.Pop();
                     }
 
                     if (operatorStack.Count > 0 && (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/")))
                     {
-                        //if (valueStack.Count <= 0)
-                        //{
-                        //    throw new ArgumentException("Nothing to caculate");
-                        //}
-                        //else
-                        //{
-                            //if (operatorStack.Count < 0 && valueStack.Count < 2)
-                            //{
-                            //    throw new ArgumentException("No operator for more than two numbers");
-                            //}
-                            //else
-                            //{
-                                if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
-                                {
-                                    operatorWithPopValStackTwice(operatorStack, valueStack);
-                                }
-                            //}
-                        //}
+                        if (operatorStack.Peek().Equals("*") || operatorStack.Peek().Equals("/"))
+                        {
+                            Object divideByZeroErr = operatorWithPopValStackTwice(operatorStack, valueStack);
+                            if (divideByZeroErr is FormulaError)
+                            {
+                                return divideByZeroErr;
+                            }
+                        }
                     }
                 }
             }
@@ -447,13 +421,10 @@ namespace SpreadsheetUtilities
             {
                 finalResult = valueStack.Pop();
             }
-            //else if (operatorStack.Count == 0 && valueStack.Count != 1)
-            //{
-            //    throw new ArgumentException();
-            //}
             else if (operatorStack.Count != 0)
             {
-                if (operatorStack.Count == 1 && (operatorStack.Peek().Equals("+") || operatorStack.Peek().Equals("-")) && valueStack.Count == 2)
+                if (operatorStack.Count == 1 && (operatorStack.Peek().Equals("+") 
+                    || operatorStack.Peek().Equals("-")) && valueStack.Count == 2)
                 {
                     double val1 = valueStack.Pop();
                     double val2 = valueStack.Pop();
@@ -467,10 +438,6 @@ namespace SpreadsheetUtilities
                         finalResult = val2 - val1;
                     }
                 }
-                //else
-                //{
-                //    throw new ArgumentException();
-                //}
             }
             return finalResult;
         }
@@ -568,6 +535,11 @@ namespace SpreadsheetUtilities
             {
                 return true;
             }
+            else if ((object.ReferenceEquals(f1, null) && !object.ReferenceEquals(f2, null))
+                || (!object.ReferenceEquals(f1, null) && object.ReferenceEquals(f2, null)))
+            {
+                return false;
+            }
             else if (f1.Equals(f2))
             {
                 return true;
@@ -586,7 +558,8 @@ namespace SpreadsheetUtilities
             {
                 return false;
             }
-            else if ((object.ReferenceEquals(f1, null) && !object.ReferenceEquals(f2, null)) || (!object.ReferenceEquals(f1, null) && object.ReferenceEquals(f2, null)))
+            else if ((object.ReferenceEquals(f1, null) && !object.ReferenceEquals(f2, null))
+                || (!object.ReferenceEquals(f1, null) && object.ReferenceEquals(f2, null)))
             {
                 return true;
             }
