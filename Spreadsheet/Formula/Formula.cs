@@ -31,10 +31,10 @@ namespace SpreadsheetUtilities
     static class ExtensionsClass
     {
         /// <summary>
-        /// A method to check if a variable is 
+        /// A method to check if a stirng is in right format as defined
         /// </summary>
-        /// <param name="variable"></param>
-        /// <returns></returns>
+        /// <param name="variable">a string that need checking</param>
+        /// <returns>true if the string is in right format; otherwise, return false</returns>
         public static Boolean isVariable(this string variable)
         {
             Regex variableFormat = new Regex("^([a-zA-Z]|[/_])[0-9a-zA-Z]*$");
@@ -43,26 +43,30 @@ namespace SpreadsheetUtilities
                 return true;
             }
             return false;
-        } 
+        }
 
         /// <summary>
-        /// 
+        /// A method to check if a string is an operotor
         /// </summary>
-        /// <param name="fourOperators"></param>
-        /// <returns></returns>
+        /// <param name="fourOperators">a string that need checking</param>
+        /// <returns>true if the string is an operator; otherwise, return false</returns>
         public static Boolean isOperator(this string fourOperators)
         {
-            if(fourOperators.Equals("+") || fourOperators.Equals("*")
+            if (fourOperators.Equals("+") || fourOperators.Equals("*")
                     || fourOperators.Equals("-") || fourOperators.Equals("/"))
             {
                 return true;
             }
             return false;
         }
-
-        public static Boolean isNonNegativeDoulbe(this string token)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="token"></param>
+        /// <returns></returns>
+        public static Boolean isDoulbe(this string token)
         {
-            if(Double.TryParse(token, out double firstResult) && firstResult >=0)
+            if (Double.TryParse(token, out double firstResult))
             {
                 return true;
             }
@@ -140,83 +144,82 @@ namespace SpreadsheetUtilities
                 throw new FormulaFormatException("There must be at least one token!");
             }
 
-            for(int i = 0; i < formulaTokensList.Count(); i++)
+            for (int i = 0; i < formulaTokensList.Count(); i++)
             {
 
                 if (formulaTokensList[i].isVariable() && !isValid(normalize(formulaTokensList[i])))
                 {
                     throw new FormulaFormatException("The variable name is not valid!");
                 }
+
+                if (formulaTokensList[i].isVariable())
+                {
+                    formulaTokensList[i] = normalize(formulaTokensList[i]);
+                }
+
+                if (formulaTokensList[i].isDoulbe())
+                {
+                    formulaTokensList[i] = Double.Parse(formulaTokensList[i]).ToString();
+                }
                 //Syntactical correction
-                if (!(!formulaTokensList[0].isNonNegativeDoulbe() || !formulaTokensList[0].isVariable()
+                if (!(!formulaTokensList[0].isDoulbe() || !formulaTokensList[0].isVariable()
                 || !formulaTokensList[0].Equals("(")))//if statement??????
                 {
                     throw new FormulaFormatException("The starting token is wrong!");
                 }
 
-                if (!(!formulaTokensList[0].isNonNegativeDoulbe() || !formulaTokensList[0].isVariable()
+                if (!(!formulaTokensList[0].isDoulbe() || !formulaTokensList[0].isVariable()
                     || !formulaTokensList[0].Equals(")")))
                 {
                     throw new FormulaFormatException("The ending token is wrong!");
                 }
 
-                if (!(!formulaTokensList[0].isNonNegativeDoulbe() || !formulaTokensList[0].isVariable()||
+                if (!(!formulaTokensList[0].isDoulbe() || !formulaTokensList[0].isVariable() ||
                     !formulaTokensList[i].Equals("(") || !formulaTokensList[i].Equals(")")))//check the validity of the token
                 {
                     throw new FormulaFormatException("The tokens are not valid!");
                 }
 
-                if (formulaTokensList[i].Equals("(")){
+                if (formulaTokensList[i].Equals("("))
+                {
                     numOfLeftParentheses++;
                 }
                 if (formulaTokensList[i].Equals(")"))
                 {
                     numOfRightParentheses++;
                 }
-                if(numOfRightParentheses > numOfLeftParentheses)
+                if (numOfRightParentheses > numOfLeftParentheses)
                 {
                     throw new FormulaFormatException("The number of right parentheses should not " +
                         "be greater than that of left parentheses!");
                 }
 
-                if((formulaTokensList[i].Equals("(") || formulaTokensList[i].isOperator() )&& i+1 <= formulaTokensList.Count())
+                if ((formulaTokensList[i].Equals("(") || formulaTokensList[i].isOperator()) && i + 1 <= formulaTokensList.Count())
                 {
-                    if(!(!formulaTokensList[i+1].isNonNegativeDoulbe() || !formulaTokensList[i+1].isVariable()
+                    if (!(!formulaTokensList[i + 1].isDoulbe() || !formulaTokensList[i + 1].isVariable()
                         || !formulaTokensList[i + 1].Equals("(")))
                     {
                         throw new FormulaFormatException("Wrong parenthesis/operator following!");
                     }
                 }
 
-                //variable legality??????
-                if ((formulaTokensList[i].isNonNegativeDoulbe() || formulaTokensList[i].isVariable()
+                if ((formulaTokensList[i].isDoulbe() || formulaTokensList[i].isVariable()
                         || formulaTokensList[i].Equals(")")) && i + 1 < formulaTokensList.Count())
                 {
-                    if (!(!formulaTokensList[i + 1].isOperator() || !formulaTokensList[i + 1].Equals(")"))) 
+                    if (!(!formulaTokensList[i + 1].isOperator() || !formulaTokensList[i + 1].Equals(")")))
                     {
                         throw new FormulaFormatException("Wrong extra following!");
                     }
                 }
             }
 
-            if(numOfLeftParentheses != numOfRightParentheses)
+            if (numOfLeftParentheses != numOfRightParentheses)
             {
                 throw new FormulaFormatException("The parentheses are not balanced!");
             }
 
             //create a normalized formula
-            normalizedFormula = new List<string>();
-            foreach(string formulaToken in formulaTokensList)
-            {
-                if (formulaToken.isVariable())
-                {
-                    normalizedFormula.Add(normalize(formulaToken));
-                }
-                else
-                {
-                    normalizedFormula.Add(formulaToken);
-                }
-            }
+            normalizedFormula = formulaTokensList;
         }
 
         /// <summary>
@@ -481,7 +484,7 @@ namespace SpreadsheetUtilities
         {
             string nFormula = "";
 
-            foreach(string token in normalizedFormula)
+            foreach (string token in normalizedFormula)
             {
                 nFormula += token;
             }
@@ -510,29 +513,18 @@ namespace SpreadsheetUtilities
         /// </summary>
         public override bool Equals(object obj)
         {
-            if(obj == null || !(obj is Formula))
+            if (obj == null || !(obj is Formula))
             {
                 return false;
             }
 
-            Formula objFormula = (Formula)obj;//?????how to change a obj into formula??
+            Formula objFormula = (Formula)obj;
 
-            foreach(string token in normalizedFormula)
+            if (!(objFormula.ToString()).Equals(this.ToString()))
             {
-                
-                if (token.isNonNegativeDoulbe()&&Double.Parse(token).ToString() != Double.Parse(token).ToString())////Check if numeric tokens are equal. //obj token???
-                {
-                    return false;
-                }
-                else if(token.isVariable()&& !token.Equals(token))//Check if variable tokens are equal.   //obj token????
-                {
-                    return false;
-                }
-                else if (!token.Equals(token))//obj token????
-                {
-                    return false;
-                }
+                return false;
             }
+
             return true;
         }
 
@@ -543,7 +535,7 @@ namespace SpreadsheetUtilities
         /// </summary>
         public static bool operator ==(Formula f1, Formula f2)
         {
-            if(f1 == null && f2 == null)
+            if (f1 == null && f2 == null)
             {
                 return true;
             }
@@ -565,7 +557,7 @@ namespace SpreadsheetUtilities
             {
                 return false;
             }
-            else if((f1 == null && f2 != null) || (f1 != null && f2 == null))
+            else if ((f1 == null && f2 != null) || (f1 != null && f2 == null))
             {
                 return true;
             }
