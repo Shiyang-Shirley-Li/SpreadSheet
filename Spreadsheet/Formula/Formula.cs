@@ -22,7 +22,19 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
-
+/// <summary>
+/// Author: Shiyang(Shirley) Li
+/// Date:01/27/2020
+/// Course: CS 3500, University of Utah, School of Computing
+/// Copyright: CS 3500 and Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
+/// 
+/// I, Shiyang(Shirley) Li, certify that I wrote this code from scratch and did not copy it in part or whole from  
+/// another source.  All references used in the completion of the assignment are cited in my README file. 
+/// 
+/// This file is a method that check validity of formula and evaluates formulas using standard infix notation, 
+/// which respects the usual precedence rules.
+/// 
+/// </summary>
 namespace SpreadsheetUtilities
 {
     /// <summary>
