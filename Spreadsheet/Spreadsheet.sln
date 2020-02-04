@@ -20,7 +20,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Formula", "Formula\Formula.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Assignment_One_Grading_Tests", "..\..\..\lecture_notes\CS3500_Grading_Tests\Assignment_One_Grading_Tests\Assignment_One_Grading_Tests.csproj", "{9843374D-BE53-4021-93E5-4C3071E2265E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FormulaTests", "FormulaTests\FormulaTests.csproj", "{1D7CB1ED-14BA-4CAC-A354-0B2307789DDC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FormulaTests", "FormulaTests\FormulaTests.csproj", "{1D7CB1ED-14BA-4CAC-A354-0B2307789DDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Spreadsheet", "Spreadsheet\Spreadsheet.csproj", "{3D81A8A1-E67E-4E96-8562-0B8D5879A95D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -56,6 +58,10 @@ Global
 		{1D7CB1ED-14BA-4CAC-A354-0B2307789DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D7CB1ED-14BA-4CAC-A354-0B2307789DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1D7CB1ED-14BA-4CAC-A354-0B2307789DDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3D81A8A1-E67E-4E96-8562-0B8D5879A95D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3D81A8A1-E67E-4E96-8562-0B8D5879A95D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3D81A8A1-E67E-4E96-8562-0B8D5879A95D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3D81A8A1-E67E-4E96-8562-0B8D5879A95D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
