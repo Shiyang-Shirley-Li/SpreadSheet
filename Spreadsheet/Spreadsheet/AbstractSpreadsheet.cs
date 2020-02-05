@@ -72,7 +72,7 @@ namespace SS
     /// <summary>
     /// Enumerates the names of all the non-empty cells in the spreadsheet.
     /// </summary>
-    public abstract IEnumerable<String> GetNamesOfAllNonemptyCells();
+    public abstract IEnumerable<String> GetNamesOfAllNonemptyCells();//how to get the cells from the spreadsheet????
 
 
     /// <summary>
@@ -91,7 +91,7 @@ namespace SS
     /// directly or indirectly, on the named cell.
     /// 
     /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
-    /// list {A1, B1, C1} is returned.
+    /// list { , B1, C1} is returned.//Always return the name first?????
     /// </summary>
     public abstract IList<String> SetCellContents(String name, double number);
 
