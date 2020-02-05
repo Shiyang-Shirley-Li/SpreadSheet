@@ -91,7 +91,7 @@ namespace SS
     /// directly or indirectly, on the named cell.
     /// 
     /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
-    /// list { , B1, C1} is returned.//Always return the name first?????
+    /// list {A1, B1, C1} is returned.
     /// </summary>
     public abstract IList<String> SetCellContents(String name, double number);
 
