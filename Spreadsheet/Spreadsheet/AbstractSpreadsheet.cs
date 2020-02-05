@@ -72,7 +72,7 @@ namespace SS
     /// <summary>
     /// Enumerates the names of all the non-empty cells in the spreadsheet.
     /// </summary>
-    public abstract IEnumerable<String> GetNamesOfAllNonemptyCells();//how to get the cells from the spreadsheet????
+    public abstract IEnumerable<String> GetNamesOfAllNonemptyCells();
 
 
     /// <summary>

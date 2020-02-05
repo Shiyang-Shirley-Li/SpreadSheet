@@ -7,7 +7,7 @@ namespace SS
     /// <summary>
     /// 
     /// </summary>
-    public class  Cell
+    public class  Cell//???????????????
     {
         private string name;
         private object contents;
@@ -30,13 +30,16 @@ namespace SS
     }
     public class Spreadsheet : AbstractSpreadsheet
     {
-        
+
         //instance variables
-        
+        Dictionary<string, Cell> cells;
+        DependencyGraph dependencyGraph;
 
         public Spreadsheet()
         {
-            AbstractSpreadsheet sheet = new Spreadsheet();//create an empty spreadsheet
+            AbstractSpreadsheet sheet = new Spreadsheet();//create an empty spreadsheet?????
+            cells = new Dictionary<string, Cell>();
+            dependencyGraph = new DependencyGraph();
         }
 
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
