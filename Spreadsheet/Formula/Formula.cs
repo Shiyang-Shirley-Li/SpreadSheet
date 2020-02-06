@@ -40,7 +40,7 @@ namespace SpreadsheetUtilities
     /// <summary>
     /// An extension class for checking formula format
     /// </summary>
-    static class ExtensionsClass
+    public static class ExtensionsClass
     {
         /// <summary>
         /// A method to check if a stirng is in right format as defined
