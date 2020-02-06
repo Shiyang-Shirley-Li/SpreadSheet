@@ -7,11 +7,10 @@ namespace SS
     /// <summary>
     /// 
     /// </summary>
-    public class  Cell//???????????????
+    public class Cell
     {
         private string name;
         private object contents;
-        private double value;
 
         public string getName()
         {
@@ -23,9 +22,9 @@ namespace SS
             contents = _contents;
         }
 
-        public void setValue(double _value)
+        public object getContents()
         {
-            value = _value;
+            return contents;
         }
     }
     public class Spreadsheet : AbstractSpreadsheet
@@ -44,17 +43,34 @@ namespace SS
 
         public override IEnumerable<string> GetNamesOfAllNonemptyCells()
         {
-            throw new NotImplementedException();
+            List<string> namesOfAllNonemptyCells = new List<string>();
+            foreach (string cellName in cells.Keys)
+            {
+                namesOfAllNonemptyCells.Add(cellName);
+            }
+            return namesOfAllNonemptyCells;
         }
-
+        private void exceptionHelper(string name)
+        {
+            if (name is null || name.isVariable())//how can I use the extension
+            {
+                throw new InvalidNameException();
+            }
+        }
         public override object GetCellContents(string name)
         {
-            throw new NotImplementedException();
+            exceptionHelper(name);
+            cells.TryGetValue(name, out Cell content);
+
+            return content;
         }
 
         public override IList<string> SetCellContents(string name, double number)
         {
-            throw new NotImplementedException();
+            exceptionHelper(name);
+            cells[name].setContents(number);
+
+            return null;
         }
 
         public override IList<string> SetCellContents(string name, string text)
@@ -69,7 +85,10 @@ namespace SS
 
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            throw new NotImplementedException();
+            IEnumerable<string> directDependents = dependencyGraph.GetDependents(name);
+            return directDependents;
         }
+
+
     }
 }

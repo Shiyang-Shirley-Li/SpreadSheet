@@ -24,7 +24,7 @@ namespace SpreadsheetTests
         public void SimpleEmptyConstructorTest()
         {
             AbstractSpreadsheet emptySheet = new Spreadsheet();
-            Assert.IsFalse(emptySheet.GetNamesOfAllNonemptyCells().GetEnumerator().MoveNext());//?????
+            Assert.IsFalse(emptySheet.GetNamesOfAllNonemptyCells().GetEnumerator().MoveNext());
         }
 
         [TestMethod]
@@ -96,18 +96,6 @@ namespace SpreadsheetTests
 
             IList<string> list = new List<string> { "A1", "B1", "C1" };
             Assert.AreEqual(list, sheet.SetCellContents("A1", 12));//??????? SetCellContent text/formula
-        }
-
-        [TestMethod]
-        public void GetDirectDependentsTest()
-        {
-            AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetCellContents("A1", 3);
-            sheet.SetCellContents("B1", new Formula("A1*A1"));
-            sheet.SetCellContents("C1", new Formula("B1+A1"));
-            sheet.SetCellContents("D1", new Formula("B1 - C1"));
-
-            IEnumerable<string> getDirectDependents = sheet.GetDirectDependents("A1");//how can I test protected test?????
         }
     }
 }
