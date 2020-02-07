@@ -1,8 +1,3 @@
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using SpreadsheetUtilities;
-using SS;
-using System.Collections.Generic;
-
 /// <summary>
 /// Author: Shiyang(Shirley) Li
 /// Date:02/03/2020
@@ -16,14 +11,21 @@ using System.Collections.Generic;
 /// to contain all SpreadsheetTest Unit Tests 
 /// 
 /// </summary>
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using SpreadsheetUtilities;
+using SS;
+using System.Collections.Generic;
+
+
 namespace SpreadsheetTests
 {
     [TestClass]
     public class SpreadsheetTests
     {
+        AbstractSpreadsheet sheet = new Spreadsheet();
         #region Class Initialize and Cleanup
         [ClassInitialize]
-        public static void ClassInitialize(TestContext tc)//?????????????????
+        public static void ClassInitialize(TestContext tc)
         {
 
         }
@@ -43,7 +45,6 @@ namespace SpreadsheetTests
         [TestMethod]
         public void GetNamesOfAllNonemptyCellsTest()
         {
-            AbstractSpreadsheet sheet = new Spreadsheet();
             sheet.SetCellContents("A1", 12);//???????list
             sheet.SetCellContents("A3", "Hello");
             Formula _cFormula = new Formula("A1 * A1");
@@ -80,7 +81,7 @@ namespace SpreadsheetTests
             AbstractSpreadsheet sheet = new Spreadsheet();
             sheet.SetCellContents("A1", 12);
 
-            Assert.AreEqual(12, sheet.GetCellContents("A1"));
+            Assert.AreEqual((double)12, sheet.GetCellContents("A1"));
         }
 
         [TestMethod]
@@ -108,7 +109,18 @@ namespace SpreadsheetTests
             sheet.SetCellContents("C1", new Formula("B1+A1"));
 
             IList<string> list = new List<string> { "A1", "B1", "C1" };
-            Assert.AreEqual(list, sheet.SetCellContents("A1", 12));//??????? SetCellContent text/formula
+            //???????
+            bool equality = true;
+            IList<string> testList = sheet.SetCellContents("A1", 12);
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (!testList[i].Equals(list[i]))
+                {
+                    equality = false;
+                }
+            }
+
+            Assert.IsTrue(equality);//??????? SetCellContent text/formula
         }
     }
 }

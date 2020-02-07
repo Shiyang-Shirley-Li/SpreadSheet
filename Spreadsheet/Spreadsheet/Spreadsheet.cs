@@ -1,9 +1,4 @@
-﻿using SpreadsheetUtilities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-
-/// <summary>
+﻿/// <summary>
 /// Author: Shiyang(Shirley) Li
 /// Date:02/03/2020
 /// Course: CS 3500, University of Utah, School of Computing
@@ -15,7 +10,12 @@ using System.Linq;
 /// This file is a method that build the "internals" of the spreadsheet
 /// 
 /// </summary>
-/// 
+///
+using SpreadsheetUtilities;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+
 namespace SS
 {
     /// <summary>
@@ -26,22 +26,7 @@ namespace SS
     public class Cell
     {
         private string name;
-        private object contents;
-
-        public string getName()
-        {
-            return name;
-        }
-
-        public void setContents(object _contents)
-        {
-            contents = _contents;
-        }
-
-        public object getContents()
-        {
-            return contents;
-        }
+        public object content;
     }
     /// <summary>
     /// This is a Spreadsheet class that implements the AbstractSpreadsheet project. A spreadsheet 
@@ -103,7 +88,7 @@ namespace SS
         /// <param name="name"> name of a non-empty cell</param>
         private void exceptionHelper(string name)
         {
-            if (name is null || name.isVariable())//isVariable is an extension from Formula to check the validity of variables
+            if (name is null || !name.isVariable())//isVariable is an extension from Formula to check the validity of variables
             {
                 throw new InvalidNameException();
             }
@@ -121,7 +106,7 @@ namespace SS
         {
             exceptionHelper(name);
             cells.TryGetValue(name, out Cell cell);
-            object content = cell.getContents();
+            object content = cell.content;
 
             return content;
         }
@@ -143,20 +128,29 @@ namespace SS
         {
             exceptionHelper(name);
             IList<string> nameNItsDependents = new List<string> { name };
-            if (cells[name].getContents() is "" || cells[name].getContents() is string)//When the content of the cell is empty or a string, there is no dependents?????? Just return the list with this name?????
+
+            //Should I add the name to the dictionary???????????
+            if (!cells.ContainsKey(name))
             {
-                cells[name].setContents(number);
-                //should I add it to the dg, since it doesn't have dependents?????????????? 
+                Cell emptyCell = new Cell();
+                emptyCell.content = "";
+                cells.TryAdd(name, emptyCell);//?????
+            }
+
+            if (cells[name].content is "" || cells[name].content is string)//When the content of the cell is empty or a string, there is no dependents
+            {
+                cells[name].content = number;
             }
             else//the content of the cell is a Formula
             {
-                Formula preCellContent = (Formula)cells[name].getContents();
-                IEnumerable<string> variablesInFormula = preCellContent.GetVariables();
-                List<string> variablesList = variablesInFormula.ToList();
-                //Do I need to add dependency here??? How to get its dependents????? 
+                IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
+                foreach (String dependent in directNIndirectDependents)
+                {
+                    nameNItsDependents.Add(dependent);
+                }
+                cells[name].content = number;
             }
-
-            return null;
+            return nameNItsDependents;
         }
 
         /// <summary>
@@ -181,9 +175,32 @@ namespace SS
             }
             //the same step as above
             exceptionHelper(name);
+            IList<string> nameNItsDependents = new List<string> { name };
+
+            //Should I add the name to the dictionary???????????
+            if (!cells.ContainsKey(name))
+            {
+                Cell emptyCell = new Cell();
+                emptyCell.content = "";
+                cells.TryAdd(name, emptyCell);//?????
+            }
+
+            if (cells[name].content is "" || cells[name].content is string)//When the content of the cell is empty or a string, there is no dependents
+            {
+                cells[name].content = text;
+            }
+            else//the content of the cell is a Formula
+            {
+                IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
+                //Do I need to remove indirect dependents???????????
+                foreach (String dependent in directNIndirectDependents)
+                {
+                    dependencyGraph.RemoveDependency(name, dependent);
+                }
+                cells[name].content = text;
+            }
+            return nameNItsDependents;
             //remove dependency?? Will it cause error, since there are dependents? replace to blank // use recalculate here
-            //
-            return null;
         }
 
         /// <summary>
@@ -209,19 +226,69 @@ namespace SS
                 throw new ArgumentNullException();
             }
             //the same step as above 
-            return null;
+            exceptionHelper(name);
+
+            IEnumerable<string> formulaVariables = formula.GetVariables();
+            foreach(string var in formulaVariables)
+            {
+                if (var.Equals(name))
+                {
+                    throw new CircularException();
+                }
+            }
+
+            IList<string> nameNItsDependents = new List<string>();
+
+            //Should I add the name to the dictionary???????????
+            if (!cells.ContainsKey(name))
+            {
+                Cell emptyCell = new Cell();
+                emptyCell.content = "";
+                cells.TryAdd(name, emptyCell);//?????
+            }
+
+
+            if (cells[name].content is Formula)//the content of the cell is a Formula
+            {
+                IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
+                foreach (String dependent in directNIndirectDependents)
+                {
+                    dependencyGraph.RemoveDependency(name, dependent);
+                }
+            }
+            cells[name].content = formula;
+            //Add dependency????????
+            IEnumerable<string> variableInFormula = formula.GetVariables();
+            foreach (string variable in variableInFormula)
+            {
+                dependencyGraph.AddDependency(name, variable);
+                nameNItsDependents.Add(variable);
+            }
+
+            IList<string> nameNItsDependentsInRightOrder = new List<string>();
+            for(int i = nameNItsDependents.Count - 1; i >=0; i--)
+            {
+                nameNItsDependentsInRightOrder.Add(nameNItsDependents[i]);
+            }
+            nameNItsDependents.Add(name);
+            return nameNItsDependents;
         }
 
         /// <summary>
-        /// 
+        /// Returns an enumeration, without duplicates, of the names of all cells whose
+        /// values depend directly on the value of the named cell.
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <param name="name">The name of a cell</param>
+        /// <returns>A list with named cells and its direct or indirect dependents</returns>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
             IEnumerable<string> directDependentsWitoutName = dependencyGraph.GetDependents(name);
-            LinkedList<string> directDependents = directDependentsWitoutName.ToList();
-            directDependents.AddFirst(name);//????????
+            LinkedList<string> directDependents = new LinkedList<string>();
+            foreach (string dependent in directDependentsWitoutName)
+            {
+                directDependents.Append(dependent);
+            }
+            directDependents.AddFirst(name);
             return directDependents;
         }
     }
