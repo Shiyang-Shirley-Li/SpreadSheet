@@ -14,7 +14,6 @@
 using SpreadsheetUtilities;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace SS
 {
@@ -25,7 +24,6 @@ namespace SS
     /// </summary>
     public class Cell
     {
-        private string name;//
         public object content;
     }
     /// <summary>
@@ -132,7 +130,7 @@ namespace SS
             exceptionHelper(name);
             ISet<string> nameNItsDependents = new HashSet<string>();
 
-            //Should I add the name to the dictionary when it is empty at first???????????
+            //Should I add the name to the dictionary when it is empty at first??????????? or Is there another way to do it?????
             if (!cells.ContainsKey(name))
             {
                 Cell emptyCell = new Cell();
@@ -140,7 +138,7 @@ namespace SS
                 cells.Add(name, emptyCell);//?????
             }
 
-            if (cells[name].content is "" || cells[name].content is string)//When the content of the cell is empty or a string, there is no dependents
+            if (cells[name].content is "" || cells[name].content is string || cells[name].content is double)//When the content of the cell is empty or a string, there is no dependents
             {
                 cells[name].content = number;
             }
@@ -150,7 +148,7 @@ namespace SS
                 IEnumerable<string> variableInFormula = formula.GetVariables();
                 foreach (string variable in variableInFormula)
                 {
-                    dependencyGraph.RemoveDependency(variable, name);//Do I need to remove dependency????????
+                    dependencyGraph.RemoveDependency(variable, name);
                 }
             }
             IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
@@ -200,7 +198,7 @@ namespace SS
                 cells.TryAdd(name, emptyCell);//?????
             }
 
-            if (cells[name].content is "" || cells[name].content is string)//When the content of the cell is empty or a string, there is no dependents
+            if (cells[name].content is "" || cells[name].content is string || cells[name].content is double)//When the content of the cell is empty or a string, there is no dependents
             {
                 cells[name].content = text;
             }
@@ -214,6 +212,13 @@ namespace SS
                 }
                 cells[name].content = text;
             }
+
+            IEnumerable<string> dependents = GetCellsToRecalculate(name);
+            foreach (String dependent in dependents)
+            {
+                nameNItsDependents.Add(dependent);
+            }
+
             nameNItsDependents.Add(name);
             return nameNItsDependents;//text has no dependents, so just return itself???????????????
             
@@ -282,7 +287,12 @@ namespace SS
             foreach (string variable in variableInFormula)
             {
                 dependencyGraph.AddDependency(variable, name);
-                nameNItsDependents.Add(variable);
+            }
+
+            IEnumerable<string> depdents = GetCellsToRecalculate(name);
+            foreach (String dependent in dependents)
+            {
+                nameNItsDependents.Add(dependent);
             }
             nameNItsDependents.Add(name);
 

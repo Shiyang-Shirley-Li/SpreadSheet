@@ -137,7 +137,7 @@ namespace SpreadsheetTests
             sheet.SetCellContents("B1", B1Formula);
             sheet.SetCellContents("C1", new Formula("B1+A1"));
 
-            ISet<string> set = new HashSet<string> { "A1", "D1", "E1" };//Do I need to remove the dependency?????
+            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };//Do I need to remove the dependency?????
             ISet<string> testSet = sheet.SetCellContents("A1", new Formula("D1 + E1"));
 
             Assert.IsTrue(set.SetEquals(testSet));
