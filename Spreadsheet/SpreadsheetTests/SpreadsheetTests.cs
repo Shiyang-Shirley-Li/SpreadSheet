@@ -22,18 +22,18 @@ namespace SpreadsheetTests
     [TestClass]
     public class SpreadsheetTests
     {
-        AbstractSpreadsheet sheet = new Spreadsheet();
-        #region Class Initialize and Cleanup
-        [ClassInitialize]
-        public static void ClassInitialize(TestContext tc)
-        {
+        //AbstractSpreadsheet sheet = new Spreadsheet();
+        //#region Class Initialize and Cleanup
+        //[ClassInitialize]
+        //public static void ClassInitialize(TestContext tc)
+        //{
 
-        }
-        [ClassCleanup]
-        public static void ClassCleanup()
-        {
-        }
-        #endregion
+        //}
+        //[ClassCleanup]
+        //public static void ClassCleanup()
+        //{
+        //}
+        //#endregion
 
         [TestMethod()]
         public void SimpleEmptyConstructorTest()
@@ -45,7 +45,8 @@ namespace SpreadsheetTests
         [TestMethod]
         public void GetNamesOfAllNonemptyCellsTest()
         {
-            sheet.SetCellContents("A1", 12);//???????list
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("A1", 12);
             sheet.SetCellContents("A3", "Hello");
             Formula _cFormula = new Formula("A1 * A1");
             sheet.SetCellContents("_c", _cFormula);
@@ -56,7 +57,7 @@ namespace SpreadsheetTests
             Assert.IsTrue(namesOfAllNonemptyCells.MoveNext());
             Assert.AreEqual("A3", namesOfAllNonemptyCells.Current);
             Assert.IsTrue(namesOfAllNonemptyCells.MoveNext());
-            Assert.AreEqual("_c", namesOfAllNonemptyCells.Current);//will it in this order??????
+            Assert.AreEqual("_c", namesOfAllNonemptyCells.Current);
         }
 
         [TestMethod]
@@ -101,26 +102,47 @@ namespace SpreadsheetTests
         }
 
         [TestMethod]
-        public void SetCellContentsTest()
+        public void SetCellContentsNumberTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
             Formula B1Formula = new Formula("A1 * 2");
             sheet.SetCellContents("B1", B1Formula);
             sheet.SetCellContents("C1", new Formula("B1+A1"));
 
-            IList<string> list = new List<string> { "A1", "B1", "C1" };
-            //???????
-            bool equality = true;
-            IList<string> testList = sheet.SetCellContents("A1", 12);
-            for (int i = 0; i < list.Count; i++)
-            {
-                if (!testList[i].Equals(list[i]))
-                {
-                    equality = false;
-                }
-            }
+            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };
+            ISet<string> testSet = sheet.SetCellContents("A1", 12);
 
-            Assert.IsTrue(equality);//??????? SetCellContent text/formula
+            Assert.IsTrue(set.SetEquals(testSet));
+        }
+
+        [TestMethod]
+        public void SetCellContentsTextTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            Formula B1Formula = new Formula("A1 * 2");
+            sheet.SetCellContents("B1", B1Formula);
+            sheet.SetCellContents("C1", new Formula("B1+A1"));
+
+            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };//Do I need to remove the dependency?????
+            ISet<string> testSet = sheet.SetCellContents("A1", "Hello");
+
+            Assert.IsTrue(set.SetEquals(testSet));
+        }
+
+        [TestMethod]
+        public void SetCellContentsFormulaTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            Formula B1Formula = new Formula("A1 * 2");
+            sheet.SetCellContents("B1", B1Formula);
+            sheet.SetCellContents("C1", new Formula("B1+A1"));
+
+            ISet<string> set = new HashSet<string> { "A1", "D1", "E1" };//Do I need to remove the dependency?????
+            ISet<string> testSet = sheet.SetCellContents("A1", new Formula("D1 + E1"));
+
+            Assert.IsTrue(set.SetEquals(testSet));
         }
     }
 }
+
+

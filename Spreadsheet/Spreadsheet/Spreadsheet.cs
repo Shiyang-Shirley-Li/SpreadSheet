@@ -25,7 +25,7 @@ namespace SS
     /// </summary>
     public class Cell
     {
-        private string name;
+        private string name;//
         public object content;
     }
     /// <summary>
@@ -106,9 +106,12 @@ namespace SS
         {
             exceptionHelper(name);
             cells.TryGetValue(name, out Cell cell);
-            object content = cell.content;
-
-            return content;
+            if(cell is null)
+            {
+                return "";
+            }
+            object cellContent = cell.content;
+            return cellContent;
         }
 
         /// <summary>
@@ -124,17 +127,17 @@ namespace SS
         /// the named cell into
         /// </param>
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
-        public override IList<string> SetCellContents(string name, double number)
+        public override ISet<string> SetCellContents(string name, double number)
         {
             exceptionHelper(name);
-            IList<string> nameNItsDependents = new List<string> { name };
+            ISet<string> nameNItsDependents = new HashSet<string>();
 
-            //Should I add the name to the dictionary???????????
+            //Should I add the name to the dictionary when it is empty at first???????????
             if (!cells.ContainsKey(name))
             {
                 Cell emptyCell = new Cell();
                 emptyCell.content = "";
-                cells.TryAdd(name, emptyCell);//?????
+                cells.Add(name, emptyCell);//?????
             }
 
             if (cells[name].content is "" || cells[name].content is string)//When the content of the cell is empty or a string, there is no dependents
@@ -143,13 +146,20 @@ namespace SS
             }
             else//the content of the cell is a Formula
             {
-                IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
-                foreach (String dependent in directNIndirectDependents)
+                Formula formula = (Formula)cells[name].content;
+                IEnumerable<string> variableInFormula = formula.GetVariables();
+                foreach (string variable in variableInFormula)
                 {
-                    nameNItsDependents.Add(dependent);
+                    dependencyGraph.RemoveDependency(variable, name);//Do I need to remove dependency????????
                 }
-                cells[name].content = number;
             }
+            IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
+            foreach (String dependent in directNIndirectDependents)
+            {
+                nameNItsDependents.Add(dependent);
+            }
+            nameNItsDependents.Add(name);
+            cells[name].content = number;
             return nameNItsDependents;
         }
 
@@ -167,7 +177,7 @@ namespace SS
         /// <param name="text">A text that we need to change the content of
         /// the named cell into</param>
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
-        public override IList<string> SetCellContents(string name, string text)
+        public override ISet<string> SetCellContents(string name, string text)
         {
             if (text is null)
             {
@@ -175,7 +185,12 @@ namespace SS
             }
             //the same step as above
             exceptionHelper(name);
-            IList<string> nameNItsDependents = new List<string> { name };
+            ISet<string> nameNItsDependents = new HashSet<string>();
+            //If we add an empty string, it means it is an empty spreadsheet ??????????????????
+            if (text is "")
+            {
+                return nameNItsDependents;
+            }
 
             //Should I add the name to the dictionary???????????
             if (!cells.ContainsKey(name))
@@ -192,15 +207,16 @@ namespace SS
             else//the content of the cell is a Formula
             {
                 IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
-                //Do I need to remove indirect dependents???????????
+                //Do I need to remove indirect dependents??????????? Will it cause error, since there are dependents? Replace to blank????
                 foreach (String dependent in directNIndirectDependents)
                 {
                     dependencyGraph.RemoveDependency(name, dependent);
                 }
                 cells[name].content = text;
             }
-            return nameNItsDependents;
-            //remove dependency?? Will it cause error, since there are dependents? replace to blank // use recalculate here
+            nameNItsDependents.Add(name);
+            return nameNItsDependents;//text has no dependents, so just return itself???????????????
+            
         }
 
         /// <summary>
@@ -219,7 +235,7 @@ namespace SS
         /// <param name="formula">A formula that we need to change the content of
         /// the named cell into</param>
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
-        public override IList<string> SetCellContents(string name, Formula formula)
+        public override ISet<string> SetCellContents(string name, Formula formula)
         {
             if (formula is null)
             {
@@ -229,15 +245,19 @@ namespace SS
             exceptionHelper(name);
 
             IEnumerable<string> formulaVariables = formula.GetVariables();
-            foreach(string var in formulaVariables)
+            IEnumerable<string> dependents = GetCellsToRecalculate(name);
+            foreach (string var in formulaVariables)
             {
-                if (var.Equals(name))
+                foreach (string str in dependents)
                 {
-                    throw new CircularException();
+                    if (var.Equals(str))
+                    {
+                        throw new CircularException();
+                    }
                 }
             }
 
-            IList<string> nameNItsDependents = new List<string>();
+            ISet<string> nameNItsDependents = new HashSet<string>();
 
             //Should I add the name to the dictionary???????????
             if (!cells.ContainsKey(name))
@@ -250,8 +270,8 @@ namespace SS
 
             if (cells[name].content is Formula)//the content of the cell is a Formula
             {
-                IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
-                foreach (String dependent in directNIndirectDependents)
+                
+                foreach (String dependent in dependents)
                 {
                     dependencyGraph.RemoveDependency(name, dependent);
                 }
@@ -261,16 +281,11 @@ namespace SS
             IEnumerable<string> variableInFormula = formula.GetVariables();
             foreach (string variable in variableInFormula)
             {
-                dependencyGraph.AddDependency(name, variable);
+                dependencyGraph.AddDependency(variable, name);
                 nameNItsDependents.Add(variable);
             }
-
-            IList<string> nameNItsDependentsInRightOrder = new List<string>();
-            for(int i = nameNItsDependents.Count - 1; i >=0; i--)
-            {
-                nameNItsDependentsInRightOrder.Add(nameNItsDependents[i]);
-            }
             nameNItsDependents.Add(name);
+
             return nameNItsDependents;
         }
 
@@ -283,13 +298,13 @@ namespace SS
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
             IEnumerable<string> directDependentsWitoutName = dependencyGraph.GetDependents(name);
-            LinkedList<string> directDependents = new LinkedList<string>();
-            foreach (string dependent in directDependentsWitoutName)
-            {
-                directDependents.Append(dependent);
-            }
-            directDependents.AddFirst(name);
-            return directDependents;
+            //LinkedList<string> directDependents = new LinkedList<string>();
+            //foreach (string dependent in directDependentsWitoutName)
+            //{
+            //    directDependents.Append(dependent);
+            //}
+            //directDependents.AddFirst(name);
+            return directDependentsWitoutName;
         }
     }
 }
