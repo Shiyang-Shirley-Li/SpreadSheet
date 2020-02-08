@@ -1,3 +1,17 @@
+/// <summary>
+/// Author: Shiyang(Shirley) Li
+/// Date:01/20/2020
+/// Course: CS 3500, University of Utah, School of Computing
+/// Copyright: CS 3500 and Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
+/// 
+/// I, Shiyang(Shirley) Li, certify that I wrote this code starting form "//Added test cases starts here" comment
+/// from scratch and did not copy it in part or whole from another source. All references used in the completion 
+/// of the assignment are cited in my README file. 
+/// 
+/// This is a test class for DependencyGraphTest and is intended
+/// to contain all DependencyGraphTest Unit Tests 
+/// 
+/// </summary>
 using System;
 using System.Collections.Generic;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
