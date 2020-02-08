@@ -77,7 +77,11 @@ namespace SS
             List<string> namesOfAllNonemptyCells = new List<string>();
             foreach (string cellName in cells.Keys)
             {
-                namesOfAllNonemptyCells.Add(cellName);
+                cells.TryGetValue(cellName, out Cell cell);
+                if (!(cell.content is ""))//to check if the content of the cell is empty
+                {
+                    namesOfAllNonemptyCells.Add(cellName);
+                }
             }
             return namesOfAllNonemptyCells;
         }
@@ -101,13 +105,13 @@ namespace SS
         /// value should be either a string, a double, or a Formula.
         /// </summary>
         /// <param name="name">name of a non-empty cell</param>
-        /// <returns></returns>
+        /// <returns>A list with named cells and its direct or indirect dependent</returns>
         public override object GetCellContents(string name)
         {
             exceptionHelper(name);
 
             cells.TryGetValue(name, out Cell cell);
-            if(cell is null)//it means the cell is without content
+            if (cell is null)//it means the cell is without content
             {
                 return "";
             }
@@ -115,10 +119,11 @@ namespace SS
         }
 
         /// <summary>
+        /// This is a helper method for the three overloaded SetCellContent
         /// 
         /// </summary>
-        /// <param name="name"></param>
-        /// <param name="newContent"></param>
+        /// <param name="name">The name of a cell</param>
+        /// <param name="newContent">the new content we need to change the named cell into</param>
         /// <returns></returns>
         private ISet<string> SetCellContentsHelper(string name, object newContent)
         {
@@ -148,7 +153,6 @@ namespace SS
             {
                 nameAndItsDependents.Add(dependent);
             }
-            nameAndItsDependents.Add(name);
             cells[name].content = newContent;
             return nameAndItsDependents;
         }
@@ -160,7 +164,7 @@ namespace SS
         /// list consisting of name plus the names of all other cells whose value depends, 
         /// directly or indirectly, on the named cell.
         /// </summary>
-        /// <param name="name">The name of a non-empty cell</param>
+        /// <param name="name">The name of a cell</param>
         /// <param name="number">
         /// A double that we need to change the content of
         /// the named cell into
@@ -182,7 +186,7 @@ namespace SS
         /// directly or indirectly, on the named cell.
         /// 
         /// </summary>
-        /// <param name="name">The name of a non-empty cell</param>
+        /// <param name="name">The name of a cell</param>
         /// <param name="text">A text that we need to change the content of
         /// the named cell into</param>
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
@@ -192,9 +196,9 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            
+
             return SetCellContentsHelper(name, text);
-            
+
         }
 
         /// <summary>
@@ -209,7 +213,7 @@ namespace SS
         /// list consisting of name plus the names of all other cells whose value depends,
         /// directly or indirectly, on the named cell.
         /// </summary>
-        /// <param name="name">The name of a non-empty cell</param>
+        /// <param name="name">The name of a cell</param>
         /// <param name="formula">A formula that we need to change the content of
         /// the named cell into</param>
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
@@ -219,6 +223,8 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
+
+            exceptionHelper(name);
 
             IEnumerable<string> formulaVariables = formula.GetVariables();
             IEnumerable<string> dependents = GetCellsToRecalculate(name);
@@ -232,7 +238,7 @@ namespace SS
                     }
                 }
             }
- 
+
             IEnumerable<string> variableInFormula = formula.GetVariables();
             foreach (string variable in variableInFormula)
             {

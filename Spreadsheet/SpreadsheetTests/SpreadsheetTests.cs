@@ -22,18 +22,6 @@ namespace SpreadsheetTests
     [TestClass]
     public class SpreadsheetTests
     {
-        //AbstractSpreadsheet sheet = new Spreadsheet();
-        //#region Class Initialize and Cleanup
-        //[ClassInitialize]
-        //public static void ClassInitialize(TestContext tc)
-        //{
-
-        //}
-        //[ClassCleanup]
-        //public static void ClassCleanup()
-        //{
-        //}
-        //#endregion
 
         [TestMethod()]
         public void SimpleEmptyConstructorTest()
@@ -62,10 +50,17 @@ namespace SpreadsheetTests
 
         [TestMethod]
         [ExpectedException(typeof(InvalidNameException))]
-        public void GetCellContentsNullTest()
+        public void GetCellContentsNullNameTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
             sheet.GetCellContents(null);
+        }
+
+        [TestMethod]
+        public void GetCellContentsNullTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            sheet.GetCellContents("A1");
         }
 
         [TestMethod]
@@ -101,6 +96,21 @@ namespace SpreadsheetTests
             sheet.SetCellContents(null, 12.00);
         }
 
+        /// <summary>
+        /// Test setCellContents when the previous content is a formula
+        /// </summary>
+        [TestMethod]
+        public void SetCellContentsGeneralTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            sheet.SetCellContents("C1", new Formula("B1+A1"));
+
+            ISet<string> set = new HashSet<string> { "C1" };
+            ISet<string> testSet = sheet.SetCellContents("C1", "Hello");
+
+            Assert.IsTrue(set.SetEquals(testSet));
+        }
+
         [TestMethod]
         public void SetCellContentsNumberTest()
         {
@@ -123,10 +133,19 @@ namespace SpreadsheetTests
             sheet.SetCellContents("B1", B1Formula);
             sheet.SetCellContents("C1", new Formula("B1+A1"));
 
-            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };//Do I need to remove the dependency?????
+            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };
             ISet<string> testSet = sheet.SetCellContents("A1", "Hello");
 
             Assert.IsTrue(set.SetEquals(testSet));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentNullException))]
+        public void SetCellContentsNullTextTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            string str = null;
+            sheet.SetCellContents("A1", str);
         }
 
         [TestMethod]
@@ -137,10 +156,30 @@ namespace SpreadsheetTests
             sheet.SetCellContents("B1", B1Formula);
             sheet.SetCellContents("C1", new Formula("B1+A1"));
 
-            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };//Do I need to remove the dependency?????
+            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };
             ISet<string> testSet = sheet.SetCellContents("A1", new Formula("D1 + E1"));
 
             Assert.IsTrue(set.SetEquals(testSet));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentNullException))]
+        public void SetCellContentsNullFormulaTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            Formula formula = null;
+            sheet.SetCellContents("A1", formula);
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void SetCellContentsFormulaCircularTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            Formula B1Formula = new Formula("A1 * 2");
+            sheet.SetCellContents("B1", B1Formula);
+            sheet.SetCellContents("C1", new Formula("B1+A1"));
+            sheet.SetCellContents("A1", new Formula("B1 + C1"));
         }
     }
 }
