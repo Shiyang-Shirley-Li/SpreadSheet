@@ -18,14 +18,16 @@ using System.Collections.Generic;
 namespace SS
 {
     /// <summary>
-    /// This is a Cell class which defines the cell in a spreadsheet. A cell has a name and a content. The content
-    /// can be string text, double number, and formula. We cannot change the name of a cell, but can change its
-    /// content.
+    /// This is a Cell class which defines the cell in a spreadsheet. A cell has its content. The content
+    /// can be string text, double number, and formula. We can change the content of a cell, so make it
+    /// public. And the name of the Cell is defined in the Spreadsheet, thus do not need it in the class
+    /// for this assignment.
     /// </summary>
     public class Cell
     {
         public object content;
     }
+
     /// <summary>
     /// This is a Spreadsheet class that implements the AbstractSpreadsheet project. A spreadsheet 
     /// consists of an infinite number of named cells.
@@ -103,13 +105,52 @@ namespace SS
         public override object GetCellContents(string name)
         {
             exceptionHelper(name);
+
             cells.TryGetValue(name, out Cell cell);
-            if(cell is null)
+            if(cell is null)//it means the cell is without content
             {
                 return "";
             }
-            object cellContent = cell.content;
-            return cellContent;
+            return cell.content;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <param name="newContent"></param>
+        /// <returns></returns>
+        private ISet<string> SetCellContentsHelper(string name, object newContent)
+        {
+            exceptionHelper(name);
+
+            ISet<string> nameAndItsDependents = new HashSet<string>();
+            //Add the name to the dictionary when it is empty at first
+            if (!cells.ContainsKey(name))
+            {
+                Cell emptyCell = new Cell();
+                emptyCell.content = "";
+                cells.Add(name, emptyCell);
+            }
+
+            if (cells[name].content is Formula)
+            {
+                Formula formula = (Formula)cells[name].content;
+                IEnumerable<string> variableInFormula = formula.GetVariables();//Get dependees of the named cell
+                foreach (string variable in variableInFormula)
+                {
+                    dependencyGraph.RemoveDependency(variable, name);//change the formula to a number, we need to remove previous depdency
+                }
+            }
+
+            IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
+            foreach (String dependent in directNIndirectDependents)
+            {
+                nameAndItsDependents.Add(dependent);
+            }
+            nameAndItsDependents.Add(name);
+            cells[name].content = newContent;
+            return nameAndItsDependents;
         }
 
         /// <summary>
@@ -127,39 +168,9 @@ namespace SS
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
         public override ISet<string> SetCellContents(string name, double number)
         {
-            exceptionHelper(name);
-            ISet<string> nameNItsDependents = new HashSet<string>();
-
-            //Should I add the name to the dictionary when it is empty at first??????????? or Is there another way to do it?????
-            if (!cells.ContainsKey(name))
-            {
-                Cell emptyCell = new Cell();
-                emptyCell.content = "";
-                cells.Add(name, emptyCell);//?????
-            }
-
-            if (cells[name].content is "" || cells[name].content is string || cells[name].content is double)//When the content of the cell is empty or a string, there is no dependents
-            {
-                cells[name].content = number;
-            }
-            else//the content of the cell is a Formula
-            {
-                Formula formula = (Formula)cells[name].content;
-                IEnumerable<string> variableInFormula = formula.GetVariables();
-                foreach (string variable in variableInFormula)
-                {
-                    dependencyGraph.RemoveDependency(variable, name);
-                }
-            }
-            IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
-            foreach (String dependent in directNIndirectDependents)
-            {
-                nameNItsDependents.Add(dependent);
-            }
-            nameNItsDependents.Add(name);
-            cells[name].content = number;
-            return nameNItsDependents;
+            return SetCellContentsHelper(name, number);
         }
+
 
         /// <summary>
         /// If text is null, throws an ArgumentNullException.
@@ -181,46 +192,8 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            //the same step as above
-            exceptionHelper(name);
-            ISet<string> nameNItsDependents = new HashSet<string>();
-            //If we add an empty string, it means it is an empty spreadsheet ??????????????????
-            if (text is "")
-            {
-                return nameNItsDependents;
-            }
-
-            //Should I add the name to the dictionary???????????
-            if (!cells.ContainsKey(name))
-            {
-                Cell emptyCell = new Cell();
-                emptyCell.content = "";
-                cells.TryAdd(name, emptyCell);//?????
-            }
-
-            if (cells[name].content is "" || cells[name].content is string || cells[name].content is double)//When the content of the cell is empty or a string, there is no dependents
-            {
-                cells[name].content = text;
-            }
-            else//the content of the cell is a Formula
-            {
-                IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
-                //Do I need to remove indirect dependents??????????? Will it cause error, since there are dependents? Replace to blank????
-                foreach (String dependent in directNIndirectDependents)
-                {
-                    dependencyGraph.RemoveDependency(name, dependent);
-                }
-                cells[name].content = text;
-            }
-
-            IEnumerable<string> dependents = GetCellsToRecalculate(name);
-            foreach (String dependent in dependents)
-            {
-                nameNItsDependents.Add(dependent);
-            }
-
-            nameNItsDependents.Add(name);
-            return nameNItsDependents;//text has no dependents, so just return itself???????????????
+            
+            return SetCellContentsHelper(name, text);
             
         }
 
@@ -246,8 +219,6 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            //the same step as above 
-            exceptionHelper(name);
 
             IEnumerable<string> formulaVariables = formula.GetVariables();
             IEnumerable<string> dependents = GetCellsToRecalculate(name);
@@ -255,48 +226,20 @@ namespace SS
             {
                 foreach (string str in dependents)
                 {
-                    if (var.Equals(str))
+                    if (var.Equals(str))//To check if the new formula has the named cell's direct or indirect dependents as dependees or not
                     {
-                        throw new CircularException();
+                        throw new CircularException();//When it has, it is a circular dependency
                     }
                 }
             }
-
-            ISet<string> nameNItsDependents = new HashSet<string>();
-
-            //Should I add the name to the dictionary???????????
-            if (!cells.ContainsKey(name))
-            {
-                Cell emptyCell = new Cell();
-                emptyCell.content = "";
-                cells.TryAdd(name, emptyCell);//?????
-            }
-
-
-            if (cells[name].content is Formula)//the content of the cell is a Formula
-            {
-                
-                foreach (String dependent in dependents)
-                {
-                    dependencyGraph.RemoveDependency(name, dependent);
-                }
-            }
-            cells[name].content = formula;
-            //Add dependency????????
+ 
             IEnumerable<string> variableInFormula = formula.GetVariables();
             foreach (string variable in variableInFormula)
             {
-                dependencyGraph.AddDependency(variable, name);
+                dependencyGraph.AddDependency(variable, name);//add dependency for the new formula
             }
 
-            IEnumerable<string> depdents = GetCellsToRecalculate(name);
-            foreach (String dependent in dependents)
-            {
-                nameNItsDependents.Add(dependent);
-            }
-            nameNItsDependents.Add(name);
-
-            return nameNItsDependents;
+            return SetCellContentsHelper(name, formula);
         }
 
         /// <summary>
@@ -308,12 +251,6 @@ namespace SS
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
             IEnumerable<string> directDependentsWitoutName = dependencyGraph.GetDependents(name);
-            //LinkedList<string> directDependents = new LinkedList<string>();
-            //foreach (string dependent in directDependentsWitoutName)
-            //{
-            //    directDependents.Append(dependent);
-            //}
-            //directDependents.AddFirst(name);
             return directDependentsWitoutName;
         }
     }
