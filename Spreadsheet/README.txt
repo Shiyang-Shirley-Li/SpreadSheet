@@ -29,5 +29,4 @@ Assignment Four - Onward to a Spreadsheet   2/3/2020 - 2/7/2020
 5. Examples of Good Software Practice:
 	1. In Spreadsheet, I used two helper methods to avoid repeated code. One is the SetCellContentsHelper(string name, object newContent) helper method to reduce the
 	   repeated code in the three overloaded setCellContents method. The other is the exceptionHelper(String name) helper method to reduce the repeated use of checking
-	   validity of the name;
-	2. In SpreadsheetTests, 
+	   validity of the name.

@@ -19,6 +19,9 @@ using System.Collections.Generic;
 
 namespace SpreadsheetTests
 {
+    /// <summary>
+    /// This is test class for spreadsheet.
+    /// </summary>
     [TestClass]
     public class SpreadsheetTests
     {

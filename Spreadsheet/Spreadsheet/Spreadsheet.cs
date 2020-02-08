@@ -89,7 +89,7 @@ namespace SS
         /// <summary>
         /// A helper method for checking the validity of the name of a cell
         /// </summary>
-        /// <param name="name"> name of a non-empty cell</param>
+        /// <param name="name"> name of a cell</param>
         private void exceptionHelper(string name)
         {
             if (name is null || !name.isVariable())//isVariable is an extension from Formula to check the validity of variables
@@ -104,7 +104,7 @@ namespace SS
         /// Otherwise, returns the contents of the named cell.  The return
         /// value should be either a string, a double, or a Formula.
         /// </summary>
-        /// <param name="name">name of a non-empty cell</param>
+        /// <param name="name">name of a cell</param>
         /// <returns>A list with named cells and its direct or indirect dependent</returns>
         public override object GetCellContents(string name)
         {
