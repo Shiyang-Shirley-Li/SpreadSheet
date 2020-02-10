@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 /// <summary>
-/// Author: Shiyang(Shirley) Li
+/// Author: Shiyang(Shirley) Li, u1160160
 /// Date:01/27/2020
 /// Course: CS 3500, University of Utah, School of Computing
 /// Copyright: CS 3500 and Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
