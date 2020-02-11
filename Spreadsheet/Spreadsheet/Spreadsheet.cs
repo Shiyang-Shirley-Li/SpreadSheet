@@ -61,11 +61,19 @@ namespace SS
         Dictionary<string, Cell> cells;//A dictionary with string of cellname as key and Cell as value
         DependencyGraph dependencyGraph;
 
+        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
+
         //Constructor for spreadsheet
         public Spreadsheet()
+            :base(s=>true, s=>s, "")
         {
             cells = new Dictionary<string, Cell>();
             dependencyGraph = new DependencyGraph();
+        }
+        public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version)
+            :base(isValid, normalize, version)
+        {
+           
         }
 
         /// <summary>
@@ -258,6 +266,26 @@ namespace SS
         {
             IEnumerable<string> directDependentsWitoutName = dependencyGraph.GetDependents(name);
             return directDependentsWitoutName;
+        }
+
+        public override IList<string> SetContentsOfCell(string name, string content)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override string GetSavedVersion(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Save(string filename)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object GetCellValue(string name)
+        {
+            throw new NotImplementedException();
         }
     }
 }
