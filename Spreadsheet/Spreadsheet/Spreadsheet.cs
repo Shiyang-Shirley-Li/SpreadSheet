@@ -1,6 +1,6 @@
 ﻿/// <summary>
 /// Author: Shiyang(Shirley) Li
-/// Date:02/03/2020
+/// Date:02/10/2020
 /// Course: CS 3500, University of Utah, School of Computing
 /// Copyright: CS 3500 and Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
 /// 
@@ -14,6 +14,7 @@
 using SpreadsheetUtilities;
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace SS
 {
@@ -29,51 +30,136 @@ namespace SS
     }
 
     /// <summary>
+    /// <para>
     /// This is a Spreadsheet class that implements the AbstractSpreadsheet project. A spreadsheet 
     /// consists of an infinite number of named cells.
-    /// 
+    /// </para>
+    /// <para>
     /// A string is a valid cell name if and only if:
-    ///   (1) its first character is an underscore or a letter
-    ///   (2) its remaining characters (if any) are underscores and/or letters and/or digits
-    ///   
+    /// </para>
+    /// <list type="number">
+    ///      <item> it starts with one or more letters</item>
+    ///      <item> it ends with one or more numbers (digits)</item>
+    /// </list> 
+    /// 
+    /// /// <para>
+    ///     Any valid incoming cell name, whether passed as a parameter or embedded in a formula,
+    ///     must be normalized with the Normalize method before it is used by or saved in 
+    ///     this spreadsheet.  For example, if Normalize is s => s.ToUpper(), then
+    ///     the Formula "x3+a5" should be converted to "X3+A5" before use.
+    /// </para>
+    /// 
+    /// <para>
     /// A spreadsheet contains a cell corresponding to every possible cell name. In addition to 
     /// a name, each cell has a contents and a value. 
+    /// </para>
     /// 
+    /// <para>
     /// The contents of a cell can be (1) a string, (2) a double, or (3) a Formula.  If the
     /// contents is an empty string, we say that the cell is empty. 
-    ///  
-    /// The value of a cell can be (1) a string, (2) a double, or (3) a FormulaError.  
+    /// </para>
     /// 
+    /// <para>
+    /// The value of a cell can be (1) a string, (2) a double, or (3) a FormulaError.  
+    /// </para>
+    /// 
+    /// <para>
     /// Spreadsheets are never allowed to contain a combination of Formulas that establish
     /// a circular dependency.
+    /// </para>
     /// 
+    /// <para>
     /// For this specific spreadsheet, I will use the data structure, Dictionary, to implement
     /// the cells in the spreadsheet, the key will be the name of cell, and the value will be
     /// a Cell that contains its content. Then I can get the name of the cell by calling the 
     /// key of the dictionary, and also I cannot change a key of dictionary. In addition, I 
     /// can get the content of the cell(value in the dictionary) by its name(key).
-    /// 
+    /// </para>
     /// </summary>
     public class Spreadsheet : AbstractSpreadsheet
     {
+        /// <summary>
+        /// To check if a variable is in the format of one or more letters followed
+        /// by one or more digits
+        /// </summary>
+        /// <param name="varialbe">The variable need to be chekced</param>
+        /// <returns>true it is in the right format, otherwise, false</returns>
+        private bool isVariable(string varialbe)
+        {
+            Regex variableFormat = new Regex("^[a-z A-Z]+[0-9]+$");
+            if (variableFormat.IsMatch(varialbe))
+            {
+                return true;
+            }
+            return false;
+        }
 
         //instance variables
         Dictionary<string, Cell> cells;//A dictionary with string of cellname as key and Cell as value
         DependencyGraph dependencyGraph;
 
-        public override bool Changed { get => throw new NotImplementedException(); protected set => throw new NotImplementedException(); }
-
-        //Constructor for spreadsheet
+        /// <summary>
+        /// Zero-argument constructor for spreadsheet that imposes no extra validity conditions, normalizes
+        /// every cell name to itself, and use the name "default" as the version.
+        /// </summary>
         public Spreadsheet()
-            :base(s=>true, s=>s, "")
+            :this(s=>true, s=>s, "")
         {
-            cells = new Dictionary<string, Cell>();
-            dependencyGraph = new DependencyGraph();
+            
         }
+
+        /// <summary>
+        /// A three-argument constructor for spreadsheet
+        /// </summary>
+        /// <param name="isValid">a validity delegate</param>
+        /// <param name="normalize">a normalization delegate</param>
+        /// <param name="version">version</param>
         public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version)
             :base(isValid, normalize, version)
         {
-           
+            cells = new Dictionary<string, Cell>();
+            dependencyGraph = new DependencyGraph();
+
+            //check if all the names of the cell are in right format
+            foreach (string key in cells.Keys)
+            {
+                if (!isVariable(key))
+                {
+                    throw new InvalidNameException();
+                }
+                else if (!isValid(key))
+                {
+                    throw new InvalidNameException();
+                }
+                //should I normalize key?????????
+            }
+
+            //check if the variable in a formula is in right format when the content of the cell is a formula
+            foreach (string key in cells.Keys)
+            {
+                if (cells[key].content is Formula)
+                {
+                    throw new InvalidNameException();
+                }
+                else if (!isValid(key))
+                {
+                    throw new InvalidNameException();
+                }
+                //should I normalize key?????????
+            }
+        }
+
+        /// <summary>
+        /// A four-argument constructor for spreadsheet
+        /// </summary>
+        /// <param name="filePath">a string representing a path to a file</param>
+        /// <param name="isValid">validity delegate</param>
+        /// <param name="normalize">normalization delegate</param>
+        /// <param name="version">version</param>
+        public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
+            : base(isValid, normalize, version)
+        {
+
         }
 
         /// <summary>
@@ -178,7 +264,7 @@ namespace SS
         /// the named cell into
         /// </param>
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
-        public override ISet<string> SetCellContents(string name, double number)
+        protected override IList<string> SetCellContents(string name, double number)
         {
             return SetCellContentsHelper(name, number);
         }
@@ -198,7 +284,7 @@ namespace SS
         /// <param name="text">A text that we need to change the content of
         /// the named cell into</param>
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
-        public override ISet<string> SetCellContents(string name, string text)
+        protected override IList<string> SetCellContents(string name, string text)
         {
             if (text is null)
             {
@@ -225,7 +311,7 @@ namespace SS
         /// <param name="formula">A formula that we need to change the content of
         /// the named cell into</param>
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
-        public override ISet<string> SetCellContents(string name, Formula formula)
+        protected override IList<string> SetCellContents(string name, Formula formula)
         {
             if (formula is null)
             {
@@ -272,6 +358,16 @@ namespace SS
         {
             throw new NotImplementedException();
         }
+
+        public override bool Changed { get; protected set; }
+
+        public Func<string, bool> IsValid { get; protected set; }
+
+        
+
+        public Func<string, string> Normalize { get; protected set; }
+
+        public string Version { get; protected set; }
 
         public override string GetSavedVersion(string filename)
         {
