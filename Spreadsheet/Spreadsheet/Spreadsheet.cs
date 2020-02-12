@@ -218,12 +218,12 @@ namespace SS
         /// </summary>
         /// <param name="name">The name of a cell</param>
         /// <param name="newContent">the new content we need to change the named cell into</param>
-        /// <returns></returns>
-        private ISet<string> SetCellContentsHelper(string name, object newContent)
+        /// <returns>A list of the name and its direct and indirect dependents in order</returns>
+        private IList<string> SetCellContentsHelper(string name, object newContent)
         {
-            exceptionHelper(name);
+            //exceptionHelper(name);
 
-            ISet<string> nameAndItsDependents = new HashSet<string>();
+            IList<string> nameAndItsDependents = new List<string>();
             //Add the name to the dictionary when it is empty at first
             if (!cells.ContainsKey(name))
             {
@@ -247,8 +247,15 @@ namespace SS
             {
                 nameAndItsDependents.Add(dependent);
             }
+
+            IList<string> nameAndItsDependentsInOrder = new List<string>();//Create a list to store name and its dependents in right order
+            for(int i = nameAndItsDependents.Count; i >= 0 ; i--)
+            {
+                nameAndItsDependentsInOrder.Add(nameAndItsDependents[i]);
+            }
+    
             cells[name].content = newContent;
-            return nameAndItsDependents;
+            return nameAndItsDependentsInOrder;
         }
 
         /// <summary>
@@ -256,14 +263,14 @@ namespace SS
         /// 
         /// Otherwise, the contents of the named cell becomes number.  The method returns a
         /// list consisting of name plus the names of all other cells whose value depends, 
-        /// directly or indirectly, on the named cell.
+        /// directly or indirectly, on the named cell in order.
         /// </summary>
         /// <param name="name">The name of a cell</param>
         /// <param name="number">
         /// A double that we need to change the content of
         /// the named cell into
         /// </param>
-        /// <returns>A list with named cells and its direct or indirect dependents</returns>
+        /// <returns>A list with named cells and its direct or indirect dependents in correct order</returns>
         protected override IList<string> SetCellContents(string name, double number)
         {
             return SetCellContentsHelper(name, number);
@@ -277,13 +284,13 @@ namespace SS
         /// 
         /// Otherwise, the contents of the named cell becomes text.  The method returns a
         /// list consisting of name plus the names of all other cells whose value depends, 
-        /// directly or indirectly, on the named cell.
+        /// directly or indirectly, on the named cell in order.
         /// 
         /// </summary>
         /// <param name="name">The name of a cell</param>
         /// <param name="text">A text that we need to change the content of
         /// the named cell into</param>
-        /// <returns>A list with named cells and its direct or indirect dependents</returns>
+        /// <returns>A list with named cells and its direct or indirect dependents in correct order</returns>
         protected override IList<string> SetCellContents(string name, string text)
         {
             if (text is null)
@@ -305,12 +312,12 @@ namespace SS
         /// 
         /// Otherwise, the contents of the named cell becomes formula.  The method returns a
         /// list consisting of name plus the names of all other cells whose value depends,
-        /// directly or indirectly, on the named cell.
+        /// directly or indirectly, on the named cell in order.
         /// </summary>
         /// <param name="name">The name of a cell</param>
         /// <param name="formula">A formula that we need to change the content of
         /// the named cell into</param>
-        /// <returns>A list with named cells and its direct or indirect dependents</returns>
+        /// <returns>A list with named cells and its direct or indirect dependents in correct order</returns>
         protected override IList<string> SetCellContents(string name, Formula formula)
         {
             if (formula is null)
@@ -318,7 +325,7 @@ namespace SS
                 throw new ArgumentNullException();
             }
 
-            exceptionHelper(name);
+            //exceptionHelper(name);
 
             IEnumerable<string> formulaVariables = formula.GetVariables();
             IEnumerable<string> dependents = GetCellsToRecalculate(name);
@@ -354,16 +361,87 @@ namespace SS
             return directDependentsWitoutName;
         }
 
+        /// <summary>
+        ///   <para>Sets the contents of the named cell to the appropriate value. </para>
+        ///   <para>
+        ///       First, if the content parses as a double, the contents of the named
+        ///       cell becomes that double.
+        ///   </para>
+        ///
+        ///   <para>
+        ///       Otherwise, if content begins with the character '=', an attempt is made
+        ///       to parse the remainder of content into a Formula.  
+        ///       There are then three possible outcomes:
+        ///   </para>
+        ///
+        ///   <list type="number">
+        ///       <item>
+        ///           If the remainder of content cannot be parsed into a Formula, a 
+        ///           SpreadsheetUtilities.FormulaFormatException is thrown.
+        ///       </item>
+        /// 
+        ///       <item>
+        ///           If changing the contents of the named cell to be f
+        ///           would cause a circular dependency, a CircularException is thrown,
+        ///           and no change is made to the spreadsheet.
+        ///       </item>
+        ///
+        ///       <item>
+        ///           Otherwise, the contents of the named cell becomes f.
+        ///       </item>
+        ///   </list>
+        ///
+        ///   <para>
+        ///       Finally, if the content is a string that is not a double and does not
+        ///       begin with an "=" (equal sign), save the content as a string.
+        ///   </para>
+        /// </summary>
+        ///
+        /// <exception cref="ArgumentNullException"> 
+        ///   If the content parameter is null, throw an ArgumentNullException.
+        /// </exception>
+        /// 
+        /// <exception cref="InvalidNameException"> 
+        ///   If the name parameter is null or invalid, throw an InvalidNameException
+        /// </exception>
+        ///
+        /// <exception cref="SpreadsheetUtilities.FormulaFormatException"> 
+        ///   If the content is "=XYZ" where XYZ is an invalid formula, throw a FormulaFormatException.
+        /// </exception>
+        /// 
+        /// <exception cref="CircularException"> 
+        ///   If changing the contents of the named cell to be the formula would 
+        ///   cause a circular dependency, throw a CircularException.  
+        ///   (NOTE: No change is made to the spreadsheet.)
+        /// </exception>
+        /// 
+        /// <param name="name"> The cell name that is being changed</param>
+        /// <param name="content"> The new content of the cell</param>
+        /// 
+        /// <returns>
+        ///       <para>
+        ///           This method returns a list consisting of the passed in cell name,
+        ///           followed by the names of all other cells whose value depends, directly
+        ///           or indirectly, on the named cell. The order of the list MUST BE any
+        ///           order such that if cells are re-evaluated in that order, their dependencies 
+        ///           are satisfied by the time they are evaluated.
+        ///       </para>
+        ///
+        ///       <para>
+        ///           For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        ///           list {A1, B1, C1} is returned.  If the cells are then evaluate din the order:
+        ///           A1, then B1, then C1, the integrity of the Spreadsheet is maintained.
+        ///       </para>
+        /// </returns>
         public override IList<string> SetContentsOfCell(string name, string content)
         {
-            throw new NotImplementedException();
+            
         }
 
+        //Do I need these methods here???????????????????????
         public override bool Changed { get; protected set; }
 
         public Func<string, bool> IsValid { get; protected set; }
-
-        
 
         public Func<string, string> Normalize { get; protected set; }
 
