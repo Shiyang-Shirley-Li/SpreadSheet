@@ -26,7 +26,7 @@ namespace SS
     /// </summary>
     public class Cell
     {
-        public object content;
+        public string content;
     }
 
     /// <summary>
@@ -103,9 +103,9 @@ namespace SS
         /// every cell name to itself, and use the name "default" as the version.
         /// </summary>
         public Spreadsheet()
-            :this(s=>true, s=>s, "")
+            : this(s => true, s => s, "")
         {
-            
+
         }
 
         /// <summary>
@@ -115,7 +115,7 @@ namespace SS
         /// <param name="normalize">a normalization delegate</param>
         /// <param name="version">version</param>
         public Spreadsheet(Func<string, bool> isValid, Func<string, string> normalize, string version)
-            :base(isValid, normalize, version)
+            : base(isValid, normalize, version)
         {
             cells = new Dictionary<string, Cell>();
             dependencyGraph = new DependencyGraph();
@@ -134,18 +134,18 @@ namespace SS
                 //should I normalize key?????????
             }
 
+            //Do I need to check formula in the constructor??????
             //check if the variable in a formula is in right format when the content of the cell is a formula
             foreach (string key in cells.Keys)
             {
-                if (cells[key].content is Formula)
+                if (cells[key].content is Formula)//check if it starts with =
                 {
-                    throw new InvalidNameException();
+                    if (!isValid(key))
+                    {
+                        throw new InvalidNameException();
+                    }
                 }
-                else if (!isValid(key))
-                {
-                    throw new InvalidNameException();
-                }
-                //should I normalize key?????????
+                //normalize formula
             }
         }
 
@@ -157,7 +157,7 @@ namespace SS
         /// <param name="normalize">normalization delegate</param>
         /// <param name="version">version</param>
         public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
-            : base(isValid, normalize, version)
+        : base(isValid, normalize, version)
         {
 
         }
@@ -249,11 +249,11 @@ namespace SS
             }
 
             IList<string> nameAndItsDependentsInOrder = new List<string>();//Create a list to store name and its dependents in right order
-            for(int i = nameAndItsDependents.Count; i >= 0 ; i--)
+            for (int i = nameAndItsDependents.Count; i >= 0; i--)
             {
                 nameAndItsDependentsInOrder.Add(nameAndItsDependents[i]);
             }
-    
+
             cells[name].content = newContent;
             return nameAndItsDependentsInOrder;
         }
@@ -435,7 +435,36 @@ namespace SS
         /// </returns>
         public override IList<string> SetContentsOfCell(string name, string content)
         {
-            
+            if(Double.TryParse(content, out double val))
+            {
+                return SetCellContents(name, val);
+            }
+            else if(content[0] == '=')
+            {
+                object remainingContent = content.Substring(1, content.Length);
+                if()//how can I check if the content can be parsed into a Formula or not?????????????
+                {
+                    throw new SpreadsheetUtilities.FormulaFormatException("This is not in correct formula format");
+                }
+                else{
+                    Formula formula = (Formula)remainingContent;
+                    IEnumerable<string> formulaVariables = formula.GetVariables();
+                    IEnumerable<string> dependents = GetCellsToRecalculate(name);
+                    foreach (string var in formulaVariables)
+                    {
+                        foreach (string str in dependents)
+                        {
+                            if (var.Equals(str))//To check if the new formula has the named cell's direct or indirect dependents as dependees or not
+                            {
+                                throw new CircularException();//When it has, it is a circular dependency
+                            }
+                        }
+                    }
+                }
+                Formula correctFormula = (Formula)remainingContent;
+                return SetCellContents(name, correctFormula);
+            }
+            return SetCellContents(name, content);
         }
 
         //Do I need these methods here???????????????????????

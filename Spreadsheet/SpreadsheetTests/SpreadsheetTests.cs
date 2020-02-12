@@ -15,7 +15,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetUtilities;
 using SS;
 using System.Collections.Generic;
-
+using System.Text.RegularExpressions;
 
 namespace SpreadsheetTests
 {
@@ -25,6 +25,20 @@ namespace SpreadsheetTests
     [TestClass]
     public class SpreadsheetTests
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        public bool isValid(string str)
+        {
+            Regex oneDigitOneLetter = new Regex("[A-Za-z][0-9]");
+            if (oneDigitOneLetter.IsMatch(str))
+            {
+                return true;
+            }
+            return false;
+        }
 
         [TestMethod()]
         public void SimpleEmptyConstructorTest()
@@ -33,14 +47,26 @@ namespace SpreadsheetTests
             Assert.IsFalse(emptySheet.GetNamesOfAllNonemptyCells().GetEnumerator().MoveNext());
         }
 
+        [TestMethod()]
+        public void SimpleThreeArgsConstructorTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet(isValid, s => s.ToUpper(), "1");
+            //How to test the constructor and do I need to test?????????
+        }
+
+        [TestMethod()]
+        public void SimpleFourArgsConstructorTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet("", isValid, s => s.ToUpper(), "1");//what is the filePath?????????
+        }
+
         [TestMethod]
         public void GetNamesOfAllNonemptyCellsTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetCellContents("A1", 12);
-            sheet.SetCellContents("A3", "Hello");
-            Formula _cFormula = new Formula("A1 * A1");
-            sheet.SetCellContents("_c", _cFormula);
+            sheet.SetContentsOfCell("A1", "12");
+            sheet.SetContentsOfCell("A3", "Hello");
+            sheet.SetContentsOfCell("_c", "=A1 * A1");
 
             IEnumerator<string> namesOfAllNonemptyCells = sheet.GetNamesOfAllNonemptyCells().GetEnumerator();
             Assert.IsTrue(namesOfAllNonemptyCells.MoveNext());
@@ -78,7 +104,7 @@ namespace SpreadsheetTests
         public void GetCellContentsTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetCellContents("A1", 12);
+            sheet.SetContentsOfCell("A1", "12");
 
             Assert.AreEqual((double)12, sheet.GetCellContents("A1"));
         }
@@ -88,7 +114,7 @@ namespace SpreadsheetTests
         public void SetCellContentsInvalidTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetCellContents("&", 12.00);
+            sheet.SetContentsOfCell("&", "12.00");
         }
 
         [TestMethod]
@@ -96,7 +122,7 @@ namespace SpreadsheetTests
         public void SetCellContentsNullTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetCellContents(null, 12.00);
+            sheet.SetContentsOfCell(null, "12.00");
         }
 
         /// <summary>
@@ -106,40 +132,65 @@ namespace SpreadsheetTests
         public void SetCellContentsGeneralTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetCellContents("C1", new Formula("B1+A1"));
+            sheet.SetContentsOfCell("C1", "=B1+A1");
 
-            ISet<string> set = new HashSet<string> { "C1" };
-            ISet<string> testSet = sheet.SetCellContents("C1", "Hello");
+            IList<string> list = new List<string> { "C1" };
+            IList<string> testList = sheet.SetContentsOfCell("C1", "Hello");
 
-            Assert.IsTrue(set.SetEquals(testSet));
+            //Is there a good way to test???????????
+            bool equalityResult = true;
+            for(int i = 0; i < list.Count; i++)
+            {
+                if (!list[i].Equals(testList[i]))
+                {
+                    equalityResult = false;
+                }
+            }
+            Assert.IsTrue(equalityResult);
         }
 
         [TestMethod]
         public void SetCellContentsNumberTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            Formula B1Formula = new Formula("A1 * 2");
-            sheet.SetCellContents("B1", B1Formula);
-            sheet.SetCellContents("C1", new Formula("B1+A1"));
+            sheet.SetContentsOfCell("B1", "=A1 * 2");
+            sheet.SetContentsOfCell("C1", "=B1+A1");
 
-            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };
-            ISet<string> testSet = sheet.SetCellContents("A1", 12);
+            IList<string> list = new List<string> { "A1", "B1", "C1" };
+            IList<string> testList = sheet.SetContentsOfCell("A1", "12");
 
-            Assert.IsTrue(set.SetEquals(testSet));
+            //Is there a good way to test???????????
+            bool equalityResult = true;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (!list[i].Equals(testList[i]))
+                {
+                    equalityResult = false;
+                }
+            }
+            Assert.IsTrue(equalityResult);
         }
 
         [TestMethod]
         public void SetCellContentsTextTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            Formula B1Formula = new Formula("A1 * 2");
-            sheet.SetCellContents("B1", B1Formula);
-            sheet.SetCellContents("C1", new Formula("B1+A1"));
+            sheet.SetContentsOfCell("B1", "=A1 * 2");
+            sheet.SetContentsOfCell("C1", "=B1+A1");
 
-            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };
-            ISet<string> testSet = sheet.SetCellContents("A1", "Hello");
+            IList<string> list= new List<string> { "A1", "B1", "C1" };
+            IList<string> testList = sheet.SetContentsOfCell("A1", "Hello");
 
-            Assert.IsTrue(set.SetEquals(testSet));
+            //Is there a good way to test???????????
+            bool equalityResult = true;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (!list[i].Equals(testList[i]))
+                {
+                    equalityResult = false;
+                }
+            }
+            Assert.IsTrue(equalityResult);
         }
 
         [TestMethod]
@@ -148,21 +199,29 @@ namespace SpreadsheetTests
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
             string str = null;
-            sheet.SetCellContents("A1", str);
+            sheet.SetContentsOfCell("A1", str);
         }
 
         [TestMethod]
         public void SetCellContentsFormulaTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            Formula B1Formula = new Formula("A1 * 2");
-            sheet.SetCellContents("B1", B1Formula);
-            sheet.SetCellContents("C1", new Formula("B1+A1"));
+            sheet.SetContentsOfCell("B1", "=A1 * 2");
+            sheet.SetContentsOfCell("C1", "=B1+A1");
 
-            ISet<string> set = new HashSet<string> { "A1", "B1", "C1" };
-            ISet<string> testSet = sheet.SetCellContents("A1", new Formula("D1 + E1"));
+            IList<string> list = new List<string> { "A1", "B1", "C1" };
+            IList<string> testList = sheet.SetContentsOfCell("A1", "=D1 + E1");
 
-            Assert.IsTrue(set.SetEquals(testSet));
+            //Is there a good way to test???????????
+            bool equalityResult = true;
+            for (int i = 0; i < list.Count; i++)
+            {
+                if (!list[i].Equals(testList[i]))
+                {
+                    equalityResult = false;
+                }
+            }
+            Assert.IsTrue(equalityResult);
         }
 
         [TestMethod]
@@ -170,8 +229,7 @@ namespace SpreadsheetTests
         public void SetCellContentsNullFormulaTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            Formula formula = null;
-            sheet.SetCellContents("A1", formula);
+            sheet.SetContentsOfCell("A1", "=null");
         }
 
         [TestMethod]
@@ -179,10 +237,9 @@ namespace SpreadsheetTests
         public void SetCellContentsFormulaCircularTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            Formula B1Formula = new Formula("A1 * 2");
-            sheet.SetCellContents("B1", B1Formula);
-            sheet.SetCellContents("C1", new Formula("B1+A1"));
-            sheet.SetCellContents("A1", new Formula("B1 + C1"));
+            sheet.SetContentsOfCell("B1", "=A1 * 2");
+            sheet.SetContentsOfCell("C1", "=B1+A1");
+            sheet.SetContentsOfCell("A1", "=B1 + C1");
         }
     }
 }
