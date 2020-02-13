@@ -1,6 +1,6 @@
 /// <summary>
 /// Author: Shiyang(Shirley) Li
-/// Date:02/03/2020
+/// Date:02/10/2020
 /// Course: CS 3500, University of Utah, School of Computing
 /// Copyright: CS 3500 and Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
 /// 
@@ -20,16 +20,18 @@ using System.Text.RegularExpressions;
 namespace SpreadsheetTests
 {
     /// <summary>
-    /// This is test class for spreadsheet.
+    /// This is test class for spreadsheet. Inherit the spreadsheet, thus we can test for pivate and protected 
+    /// methods.
     /// </summary>
     [TestClass]
-    public class SpreadsheetTests
+    public class SpreadsheetTests:Spreadsheet
     {
         /// <summary>
-        /// 
+        /// A method that match the IsValid signature telling the core spreadsheet code
+        /// what valid variable names are
         /// </summary>
-        /// <param name="str"></param>
-        /// <returns></returns>
+        /// <param name="str">A string that need to be checked</param>
+        /// <returns>true if str is valid, otherwise false</returns>
         public bool isValid(string str)
         {
             Regex oneDigitOneLetter = new Regex("[A-Za-z][0-9]");
@@ -89,7 +91,7 @@ namespace SpreadsheetTests
         public void GetCellContentsNullTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.GetCellContents("A1");
+            Assert.AreEqual("", sheet.GetCellContents("A1"));
         }
 
         [TestMethod]
@@ -107,22 +109,6 @@ namespace SpreadsheetTests
             sheet.SetContentsOfCell("A1", "12");
 
             Assert.AreEqual((double)12, sheet.GetCellContents("A1"));
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(InvalidNameException))]
-        public void SetCellContentsInvalidTest()
-        {
-            AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("&", "12.00");
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(InvalidNameException))]
-        public void SetCellContentsNullTest()
-        {
-            AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell(null, "12.00");
         }
 
         /// <summary>
@@ -241,6 +227,38 @@ namespace SpreadsheetTests
             sheet.SetContentsOfCell("C1", "=B1+A1");
             sheet.SetContentsOfCell("A1", "=B1 + C1");
         }
+
+        [TestMethod]
+        [ExpectedException(typeof(System.ArgumentNullException))]
+        public void GetDirectDependentsNullNameTest()
+        {
+
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void GetDirectDependentsNullOrInvalidNameTest()
+        {
+
+        }
+
+        [TestMethod]
+        public void GetDirectDependentsTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "3");
+            sheet.SetContentsOfCell("B1", "=A1*A1");
+            sheet.SetContentsOfCell("C1", "=B1+A1");
+            sheet.SetContentsOfCell("D1", "=B1-C1");
+
+            IEnumerator<string> directDependentsOfA1 = GetDirectDependents("A1").GetEnumerator();//why i cannot use sheet.Get.....???????????????
+            Assert.IsTrue(directDependentsOfA1.MoveNext());
+            Assert.AreEqual("A1", directDependentsOfA1.Current);
+            Assert.IsTrue(directDependentsOfA1.MoveNext());
+            Assert.AreEqual("A3", directDependentsOfA1.Current);
+        }
+
+        //get cells to recalculate
     }
 }
 

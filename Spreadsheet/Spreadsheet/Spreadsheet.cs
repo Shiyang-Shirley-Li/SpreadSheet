@@ -97,15 +97,15 @@ namespace SS
         //instance variables
         Dictionary<string, Cell> cells;//A dictionary with string of cellname as key and Cell as value
         DependencyGraph dependencyGraph;
+        private bool changed;//track if the spreadsheet is changed or not
 
         /// <summary>
         /// Zero-argument constructor for spreadsheet that imposes no extra validity conditions, normalizes
         /// every cell name to itself, and use the name "default" as the version.
         /// </summary>
         public Spreadsheet()
-            : this(s => true, s => s, "")
+            : this(s => true, s => s, "default")
         {
-
         }
 
         /// <summary>
@@ -119,34 +119,7 @@ namespace SS
         {
             cells = new Dictionary<string, Cell>();
             dependencyGraph = new DependencyGraph();
-
-            //check if all the names of the cell are in right format
-            foreach (string key in cells.Keys)
-            {
-                if (!isVariable(key))
-                {
-                    throw new InvalidNameException();
-                }
-                else if (!isValid(key))
-                {
-                    throw new InvalidNameException();
-                }
-                //should I normalize key?????????
-            }
-
-            //Do I need to check formula in the constructor??????
-            //check if the variable in a formula is in right format when the content of the cell is a formula
-            foreach (string key in cells.Keys)
-            {
-                if (cells[key].content is Formula)//check if it starts with =
-                {
-                    if (!isValid(key))
-                    {
-                        throw new InvalidNameException();
-                    }
-                }
-                //normalize formula
-            }
+            changed = false;
         }
 
         /// <summary>
@@ -159,7 +132,18 @@ namespace SS
         public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
         : base(isValid, normalize, version)
         {
+            cells = new Dictionary<string, Cell>();
+            dependencyGraph = new DependencyGraph();
+            changed = false;
 
+            //Check version exception
+            if (!GetSavedVersion(filePath).Equals(version))
+            {
+                throw new SpreadsheetReadWriteException("The version is wrong!");
+            }
+
+            //Check open and read file exception
+            
         }
 
         /// <summary>
