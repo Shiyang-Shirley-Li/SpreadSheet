@@ -205,8 +205,6 @@ namespace SS
         /// <returns>A list of the name and its direct and indirect dependents in order</returns>
         private IList<string> SetCellContentsHelper(string name, object newContent)
         {
-            //exceptionHelper(name);
-
             IList<string> nameAndItsDependents = new List<string>();
             //Add the name to the dictionary when it is empty at first
             if (!cells.ContainsKey(name))
@@ -215,10 +213,10 @@ namespace SS
                 emptyCell.content = "";
                 cells.Add(name, emptyCell);
             }
-
-            if (cells[name].content is Formula)
+            
+            if (cells[name].content[0] == '=' )
             {
-                Formula formula = (Formula)cells[name].content;
+                Formula formula = new Formula(cells[name].content, Normalize, IsValid);
                 IEnumerable<string> variableInFormula = formula.GetVariables();//Get dependees of the named cell
                 foreach (string variable in variableInFormula)
                 {
@@ -238,7 +236,7 @@ namespace SS
                 nameAndItsDependentsInOrder.Add(nameAndItsDependents[i]);
             }
 
-            cells[name].content = newContent;
+            cells[name].content = newContent.ToString();
             return nameAndItsDependentsInOrder;
         }
 
@@ -309,8 +307,6 @@ namespace SS
                 throw new ArgumentNullException();
             }
 
-            //exceptionHelper(name);
-
             IEnumerable<string> formulaVariables = formula.GetVariables();
             IEnumerable<string> dependents = GetCellsToRecalculate(name);
             foreach (string var in formulaVariables)
@@ -341,6 +337,15 @@ namespace SS
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
+            if(name is null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            if(name is null || !name.isVariable())
+            {
+                throw new InvalidNameException();
+            }
             IEnumerable<string> directDependentsWitoutName = dependencyGraph.GetDependents(name);
             return directDependentsWitoutName;
         }

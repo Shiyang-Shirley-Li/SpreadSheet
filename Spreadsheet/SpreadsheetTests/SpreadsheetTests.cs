@@ -258,7 +258,50 @@ namespace SpreadsheetTests
             Assert.AreEqual("A3", directDependentsOfA1.Current);
         }
 
-        //get cells to recalculate
+        [TestMethod]
+        [ExpectedException(typeof(CircularException))]
+        public void GetCellsToRecalculateCircularExceptionTest()
+        {
+            //how to test since the exception will be thrown during set
+        }
+
+        [TestMethod]
+        public void GetCellsToRecalculateTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "5");
+            sheet.SetContentsOfCell("B1", "7");
+            sheet.SetContentsOfCell("C1", "=A1+B1");
+            sheet.SetContentsOfCell("D1", "=A1*C1");
+            sheet.SetContentsOfCell("E1", "15");
+            sheet.SetContentsOfCell("A1", "2");
+            sheet.SetContentsOfCell("B1", "3");//how to test???????????
+            IEnumerator<string> directDependentsOfA1 = GetDirectDependents("A1").GetEnumerator();//why i cannot use sheet.Get.....???????????????
+            Assert.IsTrue(directDependentsOfA1.MoveNext());
+            Assert.AreEqual("A1", directDependentsOfA1.Current);
+            Assert.IsTrue(directDependentsOfA1.MoveNext());
+            Assert.AreEqual("A3", directDependentsOfA1.Current);
+        }
+
+        [TestMethod]
+        public void GetCellsToRecalculateStringTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("A1", "5");
+            sheet.SetContentsOfCell("B1", "7");
+            sheet.SetContentsOfCell("C1", "=A1+B1");
+            sheet.SetContentsOfCell("D1", "=A1*C1");
+            sheet.SetContentsOfCell("E1", "15");
+            sheet.SetContentsOfCell("A1", "2");
+            sheet.SetContentsOfCell("B1", "3");//how to test???????????
+            IEnumerator<string> directDependentsOfA1 = GetDirectDependents("A1").GetEnumerator();//why i cannot use sheet.Get.....???????????????
+            Assert.IsTrue(directDependentsOfA1.MoveNext());
+            Assert.AreEqual("A1", directDependentsOfA1.Current);
+            Assert.IsTrue(directDependentsOfA1.MoveNext());
+            Assert.AreEqual("A3", directDependentsOfA1.Current);
+        }
+
+
     }
 }
 
