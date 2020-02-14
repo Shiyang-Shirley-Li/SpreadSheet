@@ -53,22 +53,22 @@ namespace SpreadsheetTests
         public void SimpleThreeArgsConstructorTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet(isValid, s => s.ToUpper(), "1");
-            //How to test the constructor and do I need to test?????????
+            Assert.IsFalse(sheet.GetNamesOfAllNonemptyCells().GetEnumerator().MoveNext());//???????
         }
 
-        [TestMethod()]
-        public void SimpleFourArgsConstructorTest()
-        {
-            AbstractSpreadsheet sheet = new Spreadsheet("", isValid, s => s.ToUpper(), "1");//what is the filePath?????????
-        }
+        //[TestMethod()]
+        //public void SimpleFourArgsConstructorTest()
+        //{
+        //    AbstractSpreadsheet sheet = new Spreadsheet("", isValid, s => s.ToUpper(), "1");//what is the filePath?????????
+        //}
 
         [TestMethod]
         public void GetNamesOfAllNonemptyCellsTest()
         {
-            AbstractSpreadsheet sheet = new Spreadsheet();
+            AbstractSpreadsheet sheet = new Spreadsheet(isValid, s => s.ToUpper(), "1");
             sheet.SetContentsOfCell("A1", "12");
             sheet.SetContentsOfCell("A3", "Hello");
-            sheet.SetContentsOfCell("_c", "=A1 * A1");
+            sheet.SetContentsOfCell("B1", "=A1 * A1");
 
             IEnumerator<string> namesOfAllNonemptyCells = sheet.GetNamesOfAllNonemptyCells().GetEnumerator();
             Assert.IsTrue(namesOfAllNonemptyCells.MoveNext());
@@ -76,7 +76,7 @@ namespace SpreadsheetTests
             Assert.IsTrue(namesOfAllNonemptyCells.MoveNext());
             Assert.AreEqual("A3", namesOfAllNonemptyCells.Current);
             Assert.IsTrue(namesOfAllNonemptyCells.MoveNext());
-            Assert.AreEqual("_c", namesOfAllNonemptyCells.Current);
+            Assert.AreEqual("B1", namesOfAllNonemptyCells.Current);
         }
 
         [TestMethod]
@@ -98,17 +98,25 @@ namespace SpreadsheetTests
         [ExpectedException(typeof(InvalidNameException))]
         public void GetCellContentsInvalidTest()
         {
-            AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.GetCellContents("&");
+            AbstractSpreadsheet sheet = new Spreadsheet(isValid, s => s.ToUpper(), "1");
+            sheet.GetCellContents("A12");
         }
 
         [TestMethod]
         public void GetCellContentsTest()
         {
-            AbstractSpreadsheet sheet = new Spreadsheet();
+            AbstractSpreadsheet sheet = new Spreadsheet(isValid, s => s.ToUpper(), "1");
             sheet.SetContentsOfCell("A1", "12");
 
             Assert.AreEqual((double)12, sheet.GetCellContents("A1"));
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void SetContentsOfCellInvalidTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet(isValid, s => s.ToUpper(), "1");
+            sheet.SetContentsOfCell("A12", "12");
         }
 
         /// <summary>
@@ -123,7 +131,6 @@ namespace SpreadsheetTests
             IList<string> list = new List<string> { "C1" };
             IList<string> testList = sheet.SetContentsOfCell("C1", "Hello");
 
-            //Is there a good way to test???????????
             bool equalityResult = true;
             for(int i = 0; i < list.Count; i++)
             {
@@ -145,7 +152,6 @@ namespace SpreadsheetTests
             IList<string> list = new List<string> { "A1", "B1", "C1" };
             IList<string> testList = sheet.SetContentsOfCell("A1", "12");
 
-            //Is there a good way to test???????????
             bool equalityResult = true;
             for (int i = 0; i < list.Count; i++)
             {
@@ -167,7 +173,6 @@ namespace SpreadsheetTests
             IList<string> list= new List<string> { "A1", "B1", "C1" };
             IList<string> testList = sheet.SetContentsOfCell("A1", "Hello");
 
-            //Is there a good way to test???????????
             bool equalityResult = true;
             for (int i = 0; i < list.Count; i++)
             {
@@ -198,7 +203,6 @@ namespace SpreadsheetTests
             IList<string> list = new List<string> { "A1", "B1", "C1" };
             IList<string> testList = sheet.SetContentsOfCell("A1", "=D1 + E1");
 
-            //Is there a good way to test???????????
             bool equalityResult = true;
             for (int i = 0; i < list.Count; i++)
             {
@@ -219,6 +223,14 @@ namespace SpreadsheetTests
         }
 
         [TestMethod]
+        [ExpectedException(typeof(FormulaFormatException))]
+        public void SetCellContentsFormulaFormatTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            sheet.SetContentsOfCell("B1", "=A1 *");
+        }
+
+        [TestMethod]
         [ExpectedException(typeof(CircularException))]
         public void SetCellContentsFormulaCircularTest()
         {
@@ -232,14 +244,14 @@ namespace SpreadsheetTests
         [ExpectedException(typeof(System.ArgumentNullException))]
         public void GetDirectDependentsNullNameTest()
         {
-
+            IEnumerable<string> directDependents = GetDirectDependents(null);
         }
 
         [TestMethod]
         [ExpectedException(typeof(InvalidNameException))]
-        public void GetDirectDependentsNullOrInvalidNameTest()
+        public void GetDirectDependentsInvalidNameTest()
         {
-
+            IEnumerable<string> directDependents = GetDirectDependents("1a");
         }
 
         [TestMethod]
@@ -301,6 +313,7 @@ namespace SpreadsheetTests
             Assert.AreEqual("A3", directDependentsOfA1.Current);
         }
 
+        //test for changed, GetSavedVersion, getcellvalue
 
     }
 }

@@ -15,6 +15,7 @@ using SpreadsheetUtilities;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace SS
 {
@@ -26,7 +27,8 @@ namespace SS
     /// </summary>
     public class Cell
     {
-        public string content;
+        public object content;
+        public object value;
     }
 
     /// <summary>
@@ -86,7 +88,7 @@ namespace SS
         /// <returns>true it is in the right format, otherwise, false</returns>
         private bool isVariable(string varialbe)
         {
-            Regex variableFormat = new Regex("^[a-z A-Z]+[0-9]+$");
+            Regex variableFormat = new Regex("^[a-zA-Z]+[0-9]+$");
             if (variableFormat.IsMatch(varialbe))
             {
                 return true;
@@ -97,7 +99,8 @@ namespace SS
         //instance variables
         Dictionary<string, Cell> cells;//A dictionary with string of cellname as key and Cell as value
         DependencyGraph dependencyGraph;
-        private bool changed;//track if the spreadsheet is changed or not
+
+        public override bool Changed { get; protected set; }
 
         /// <summary>
         /// Zero-argument constructor for spreadsheet that imposes no extra validity conditions, normalizes
@@ -119,7 +122,6 @@ namespace SS
         {
             cells = new Dictionary<string, Cell>();
             dependencyGraph = new DependencyGraph();
-            changed = false;
         }
 
         /// <summary>
@@ -129,22 +131,27 @@ namespace SS
         /// <param name="isValid">validity delegate</param>
         /// <param name="normalize">normalization delegate</param>
         /// <param name="version">version</param>
-        public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
-        : base(isValid, normalize, version)
-        {
-            cells = new Dictionary<string, Cell>();
-            dependencyGraph = new DependencyGraph();
-            changed = false;
+        //public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
+        //: base(isValid, normalize, version)
+        //{
+        //    cells = new Dictionary<string, Cell>();
+        //    dependencyGraph = new DependencyGraph();
 
-            //Check version exception
-            if (!GetSavedVersion(filePath).Equals(version))
-            {
-                throw new SpreadsheetReadWriteException("The version is wrong!");
-            }
-
-            //Check open and read file exception
-            
-        }
+        //    //Check open and read file exception
+        //    //Check validity of the names contained in the saved spreadsheet
+        //    //Check validity of formulas or circular dependencies
+        //    using(XmlReader reader = XmlReader.Create(filePath))
+        //    {
+        //        while (reader.Read())
+        //        {
+        //            switch (reader.Name)
+        //            {
+        //                case "spreadsheet version":
+        //                    string fileVersion = reader[]
+        //            }
+        //        }
+        //    }
+        //}
 
         /// <summary>
         /// Enumerates the names of all the non-empty cells in the spreadsheet
@@ -170,7 +177,7 @@ namespace SS
         /// <param name="name"> name of a cell</param>
         private void exceptionHelper(string name)
         {
-            if (name is null || !name.isVariable())//isVariable is an extension from Formula to check the validity of variables
+            if (name is null || !(isVariable(name)||IsValid(name)))//???????????????
             {
                 throw new InvalidNameException();
             }
@@ -213,10 +220,10 @@ namespace SS
                 emptyCell.content = "";
                 cells.Add(name, emptyCell);
             }
-            
-            if (cells[name].content[0] == '=' )
+
+            if (cells[name].content is Formula)
             {
-                Formula formula = new Formula(cells[name].content, Normalize, IsValid);
+                Formula formula = (Formula)cells[name].content;
                 IEnumerable<string> variableInFormula = formula.GetVariables();//Get dependees of the named cell
                 foreach (string variable in variableInFormula)
                 {
@@ -231,19 +238,17 @@ namespace SS
             }
 
             IList<string> nameAndItsDependentsInOrder = new List<string>();//Create a list to store name and its dependents in right order
-            for (int i = nameAndItsDependents.Count; i >= 0; i--)
+            for (int i = nameAndItsDependents.Count - 1; i >= 0; i--)
             {
                 nameAndItsDependentsInOrder.Add(nameAndItsDependents[i]);
             }
 
-            cells[name].content = newContent.ToString();
+            cells[name].content = newContent;
             return nameAndItsDependentsInOrder;
         }
 
         /// <summary>
-        /// If name is null or invalid, throws an InvalidNameException.
-        /// 
-        /// Otherwise, the contents of the named cell becomes number.  The method returns a
+        /// The contents of the named cell becomes number.  The method returns a
         /// list consisting of name plus the names of all other cells whose value depends, 
         /// directly or indirectly, on the named cell in order.
         /// </summary>
@@ -261,8 +266,6 @@ namespace SS
 
         /// <summary>
         /// If text is null, throws an ArgumentNullException.
-        /// 
-        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
         /// 
         /// Otherwise, the contents of the named cell becomes text.  The method returns a
         /// list consisting of name plus the names of all other cells whose value depends, 
@@ -286,8 +289,6 @@ namespace SS
 
         /// <summary>
         /// If the formula parameter is null, throws an ArgumentNullException.
-        /// 
-        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
         /// 
         /// Otherwise, if changing the contents of the named cell to be the formula would cause a 
         /// circular dependency, throws a CircularException, and no change is made to the spreadsheet.
@@ -337,15 +338,13 @@ namespace SS
         /// <returns>A list with named cells and its direct or indirect dependents</returns>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            if(name is null)
+            if (name is null)
             {
                 throw new ArgumentNullException();
             }
 
-            if(name is null || !name.isVariable())
-            {
-                throw new InvalidNameException();
-            }
+            exceptionHelper(name);
+          
             IEnumerable<string> directDependentsWitoutName = dependencyGraph.GetDependents(name);
             return directDependentsWitoutName;
         }
@@ -424,20 +423,24 @@ namespace SS
         /// </returns>
         public override IList<string> SetContentsOfCell(string name, string content)
         {
-            if(Double.TryParse(content, out double val))
+            if(content is null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            exceptionHelper(name);
+
+            if (Double.TryParse(content, out double val))
             {
                 return SetCellContents(name, val);
             }
-            else if(content[0] == '=')
+            else if (content[0] == '=')
             {
-                object remainingContent = content.Substring(1, content.Length);
-                if()//how can I check if the content can be parsed into a Formula or not?????????????
+                string remainingContent = content.Substring(1, content.Length - 1);
+                try
                 {
-                    throw new SpreadsheetUtilities.FormulaFormatException("This is not in correct formula format");
-                }
-                else{
-                    Formula formula = (Formula)remainingContent;
-                    IEnumerable<string> formulaVariables = formula.GetVariables();
+                    Formula contentFormula = new Formula(remainingContent, Normalize, IsValid);
+                    IEnumerable<string> formulaVariables = contentFormula.GetVariables();
                     IEnumerable<string> dependents = GetCellsToRecalculate(name);
                     foreach (string var in formulaVariables)
                     {
@@ -449,35 +452,74 @@ namespace SS
                             }
                         }
                     }
+                    return SetCellContents(name, contentFormula);
                 }
-                Formula correctFormula = (Formula)remainingContent;
-                return SetCellContents(name, correctFormula);
+                catch (FormulaFormatException)
+                {
+                    throw new FormulaFormatException("This is not in correct formula format");
+                }
             }
             return SetCellContents(name, content);
         }
 
-        //Do I need these methods here???????????????????????
-        public override bool Changed { get; protected set; }
-
-        public Func<string, bool> IsValid { get; protected set; }
-
-        public Func<string, string> Normalize { get; protected set; }
-
-        public string Version { get; protected set; }
-
+        /// <summary>
+        /// Get the version information of the spreadsheet saved in the named file.
+        /// If ther are any problems opening, reading, or closing the file, the method
+        /// would throw a SpreadsheetReadWriteExeption.
+        /// </summary>
+        /// <param name="filename">the name of the file you need to get the version from</param>
+        /// <returns>string version</returns>
         public override string GetSavedVersion(string filename)
         {
-            throw new NotImplementedException();
+            return null;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="filename"></param>
         public override void Save(string filename)
         {
-            throw new NotImplementedException();
-        }
 
+        }
+        //{
+        //    //Some non-default settings for our XML writer. Specifically, use
+        //    //indentation to make it more readable.
+        //    XmlWriterSettings settings = new XmlWriterSettings();
+        //    settings.Indent = true;
+        //    settings.IndentChars = "  ";
+        //    // Create an XmlWriter inside this block, and automatically Dispose() it at the end.
+        //    using (XmlWriter writer = XmlWriter.Create(filename, settings))
+        //    {
+        //        writer.WriteStartDocument();
+        //        writer.WriteStartElement("Nation");//spreadsheet version?????????????
+
+        //        writer.WriteStartElement("cell");
+        //        // This adds an attribute to the cell element
+        //        writer.WriteAttributeString("name", );
+        //        // write the states themselves
+        //        foreach (State s in _states)
+        //            s.WriteXml(writer);
+        //        writer.WriteAttributeString("contents", );
+
+        //        writer.WriteStartElement("spreadsheet");
+
+                
+
+        //        writer.WriteEndElement(); // Ends the States block
+        //        writer.WriteEndElement(); // Ends the Nation block
+        //        writer.WriteEndDocument();
+        //    }
+        //}
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         public override object GetCellValue(string name)
         {
-            throw new NotImplementedException();
+            return null;
         }
     }
 }
