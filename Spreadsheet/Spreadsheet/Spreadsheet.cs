@@ -177,7 +177,7 @@ namespace SS
         /// <param name="name"> name of a cell</param>
         private void exceptionHelper(string name)
         {
-            if (name is null || !(isVariable(name)||IsValid(name)))//???????????????
+            if (name is null || !isVariable(name)|| !IsValid(name))//???????????????
             {
                 throw new InvalidNameException();
             }
@@ -237,14 +237,14 @@ namespace SS
                 nameAndItsDependents.Add(dependent);
             }
 
-            IList<string> nameAndItsDependentsInOrder = new List<string>();//Create a list to store name and its dependents in right order
-            for (int i = nameAndItsDependents.Count - 1; i >= 0; i--)
-            {
-                nameAndItsDependentsInOrder.Add(nameAndItsDependents[i]);
-            }
+            //IList<string> nameAndItsDependentsInOrder = new List<string>();//Create a list to store name and its dependents in right order
+            //for (int i = nameAndItsDependents.Count - 1; i >= 0; i--)
+            //{
+            //    nameAndItsDependentsInOrder.Add(nameAndItsDependents[i]);
+            //}
 
             cells[name].content = newContent;
-            return nameAndItsDependentsInOrder;
+            return nameAndItsDependents;
         }
 
         /// <summary>

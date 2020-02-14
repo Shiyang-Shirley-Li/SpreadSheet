@@ -219,7 +219,7 @@ namespace SpreadsheetTests
         public void SetCellContentsNullFormulaTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("A1", "=null");
+            sheet.SetContentsOfCell("A1", null);
         }
 
         [TestMethod]
@@ -265,9 +265,9 @@ namespace SpreadsheetTests
 
             IEnumerator<string> directDependentsOfA1 = GetDirectDependents("A1").GetEnumerator();//why i cannot use sheet.Get.....???????????????
             Assert.IsTrue(directDependentsOfA1.MoveNext());
-            Assert.AreEqual("A1", directDependentsOfA1.Current);
+            Assert.AreEqual("B1", directDependentsOfA1.Current);
             Assert.IsTrue(directDependentsOfA1.MoveNext());
-            Assert.AreEqual("A3", directDependentsOfA1.Current);
+            Assert.AreEqual("C1", directDependentsOfA1.Current);
         }
 
         [TestMethod]
