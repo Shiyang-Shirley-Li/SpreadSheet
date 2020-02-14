@@ -16,6 +16,7 @@ using SpreadsheetUtilities;
 using SS;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using System.Xml;
 
 namespace SpreadsheetTests
 {
@@ -34,7 +35,7 @@ namespace SpreadsheetTests
         /// <returns>true if str is valid, otherwise false</returns>
         public bool isValid(string str)
         {
-            Regex oneDigitOneLetter = new Regex("[A-Za-z][0-9]");
+            Regex oneDigitOneLetter = new Regex("^[A-Za-z][0-9]$");
             if (oneDigitOneLetter.IsMatch(str))
             {
                 return true;
@@ -53,14 +54,33 @@ namespace SpreadsheetTests
         public void SimpleThreeArgsConstructorTest()
         {
             AbstractSpreadsheet sheet = new Spreadsheet(isValid, s => s.ToUpper(), "1");
-            Assert.IsFalse(sheet.GetNamesOfAllNonemptyCells().GetEnumerator().MoveNext());//???????
+            Assert.IsFalse(sheet.GetNamesOfAllNonemptyCells().GetEnumerator().MoveNext());
+            sheet.SetContentsOfCell("a1", "Hi!");
+            IEnumerator<string> namesOfAllNonemptyCells = sheet.GetNamesOfAllNonemptyCells().GetEnumerator();
+            Assert.IsTrue(namesOfAllNonemptyCells.MoveNext());
+            Assert.AreEqual("A1", namesOfAllNonemptyCells.Current);
         }
 
-        //[TestMethod()]
-        //public void SimpleFourArgsConstructorTest()
-        //{
-        //    AbstractSpreadsheet sheet = new Spreadsheet("", isValid, s => s.ToUpper(), "1");//what is the filePath?????????
-        //}
+        [TestMethod()]
+        public void SimpleFourArgsConstructorTest()
+        {
+            using (XmlWriter writer = XmlWriter.Create("save.txt"))
+            {
+                writer.WriteStartDocument();
+                writer.WriteStartElement("spreadsheet");
+                writer.WriteAttributeString("version", "");
+
+                writer.WriteStartElement("cell");
+                writer.WriteElementString("name", "A1");
+                writer.WriteElementString("contents", "hello");
+                writer.WriteEndElement();
+
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
+            }
+            AbstractSpreadsheet ss = new Spreadsheet("save.txt", s => true, s => s, "");
+            ss.Save("save.txt");
+        }
 
         [TestMethod]
         public void GetNamesOfAllNonemptyCellsTest()

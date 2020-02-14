@@ -20,10 +20,11 @@ using System.Xml;
 namespace SS
 {
     /// <summary>
-    /// This is a Cell class which defines the cell in a spreadsheet. A cell has its content. The content
-    /// can be string text, double number, and formula. We can change the content of a cell, so make it
-    /// public. And the name of the Cell is defined in the Spreadsheet, thus do not need it in the class
-    /// for this assignment.
+    /// This is a Cell class which defines the cell in a spreadsheet. A cell has its content and value. 
+    /// The content can be string text, double number, and formula. We can change the content of a cell, 
+    /// so make it public. The value is different from the content. Value should be either a string, 
+    /// a double, or a SpreadsheetUtilities.FormulaError. And the name of the Cell is defined in the 
+    /// Spreadsheet, thus do not need it in the class for this assignment.
     /// </summary>
     public class Cell
     {
@@ -131,27 +132,39 @@ namespace SS
         /// <param name="isValid">validity delegate</param>
         /// <param name="normalize">normalization delegate</param>
         /// <param name="version">version</param>
-        //public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
-        //: base(isValid, normalize, version)
-        //{
-        //    cells = new Dictionary<string, Cell>();
-        //    dependencyGraph = new DependencyGraph();
+        public Spreadsheet(string filePath, Func<string, bool> isValid, Func<string, string> normalize, string version)
+        : base(isValid, normalize, version)
+        {
+            cells = new Dictionary<string, Cell>();
+            dependencyGraph = new DependencyGraph();
 
-        //    //Check open and read file exception
-        //    //Check validity of the names contained in the saved spreadsheet
-        //    //Check validity of formulas or circular dependencies
-        //    using(XmlReader reader = XmlReader.Create(filePath))
-        //    {
-        //        while (reader.Read())
-        //        {
-        //            switch (reader.Name)
-        //            {
-        //                case "spreadsheet version":
-        //                    string fileVersion = reader[]
-        //            }
-        //        }
-        //    }
-        //}
+            //Check open and read file exception
+            using (XmlReader reader = XmlReader.Create(filePath))
+            {
+                while (reader.Read())
+                {
+                    if (reader.IsStartElement())
+                    {
+                        switch (reader.Name)
+                        {
+                            case "spreadsheet":
+                                Console.WriteLine("Spreadsheet version: " + reader["version"]);
+                                break;
+                            case "cell":
+                                break;//no more direct info to read on cell
+                            case "name":
+                                reader.Read();
+                                string cellName = reader.Value;
+                                reader.Read();
+                                SetContentsOfCell(cellName, reader.Value);//can check validity of the names, formulas or circular dependencies 
+                                                                          //contained in the saved spreadsheet
+                                break;
+                        }
+                    }
+      
+                }
+            }
+        }
 
         /// <summary>
         /// Enumerates the names of all the non-empty cells in the spreadsheet
@@ -177,7 +190,7 @@ namespace SS
         /// <param name="name"> name of a cell</param>
         private void exceptionHelper(string name)
         {
-            if (name is null || !isVariable(name)|| !IsValid(name))//???????????????
+            if (name is null || !isVariable(name) || !IsValid(name))//???????????????
             {
                 throw new InvalidNameException();
             }
@@ -237,13 +250,8 @@ namespace SS
                 nameAndItsDependents.Add(dependent);
             }
 
-            //IList<string> nameAndItsDependentsInOrder = new List<string>();//Create a list to store name and its dependents in right order
-            //for (int i = nameAndItsDependents.Count - 1; i >= 0; i--)
-            //{
-            //    nameAndItsDependentsInOrder.Add(nameAndItsDependents[i]);
-            //}
-
             cells[name].content = newContent;
+            Changed = true;
             return nameAndItsDependents;
         }
 
@@ -262,7 +270,6 @@ namespace SS
         {
             return SetCellContentsHelper(name, number);
         }
-
 
         /// <summary>
         /// If text is null, throws an ArgumentNullException.
@@ -284,7 +291,6 @@ namespace SS
             }
 
             return SetCellContentsHelper(name, text);
-
         }
 
         /// <summary>
@@ -344,7 +350,7 @@ namespace SS
             }
 
             exceptionHelper(name);
-          
+
             IEnumerable<string> directDependentsWitoutName = dependencyGraph.GetDependents(name);
             return directDependentsWitoutName;
         }
@@ -423,13 +429,12 @@ namespace SS
         /// </returns>
         public override IList<string> SetContentsOfCell(string name, string content)
         {
-            if(content is null)
+            if (content is null)
             {
                 throw new ArgumentNullException();
             }
-
             exceptionHelper(name);
-
+            name = Normalize(name);
             if (Double.TryParse(content, out double val))
             {
                 return SetCellContents(name, val);
@@ -480,37 +485,31 @@ namespace SS
         /// <param name="filename"></param>
         public override void Save(string filename)
         {
+            ////Some non-default settings for our XML writer. Specifically, use
+            ////indentation to make it more readable.
+            XmlWriterSettings settings = new XmlWriterSettings();
+            settings.Indent = true;
+            settings.IndentChars = "  ";
+            // Create an XmlWriter inside this block, and automatically Dispose() it at the end.
+            using (XmlWriter writer = XmlWriter.Create(filename, settings))
+            {
+                writer.WriteStartDocument();
+                writer.WriteStartElement("spreadsheet");
+                writer.WriteAttributeString("version", "version information goes here");//????????????? do I need = here?
 
+                writer.WriteStartElement("cell");
+                // This adds an attribute to the cell element
+                foreach (string cellName in cells.Keys)
+                {
+                    writer.WriteElementString("name", cellName);
+                    writer.WriteElementString("contents", cells[cellName].content.ToString());
+                }
+
+                writer.WriteEndElement(); // Ends the cell block
+                writer.WriteEndElement(); // Ends the spreadsheet block
+                writer.WriteEndDocument();
+            }
         }
-        //{
-        //    //Some non-default settings for our XML writer. Specifically, use
-        //    //indentation to make it more readable.
-        //    XmlWriterSettings settings = new XmlWriterSettings();
-        //    settings.Indent = true;
-        //    settings.IndentChars = "  ";
-        //    // Create an XmlWriter inside this block, and automatically Dispose() it at the end.
-        //    using (XmlWriter writer = XmlWriter.Create(filename, settings))
-        //    {
-        //        writer.WriteStartDocument();
-        //        writer.WriteStartElement("Nation");//spreadsheet version?????????????
-
-        //        writer.WriteStartElement("cell");
-        //        // This adds an attribute to the cell element
-        //        writer.WriteAttributeString("name", );
-        //        // write the states themselves
-        //        foreach (State s in _states)
-        //            s.WriteXml(writer);
-        //        writer.WriteAttributeString("contents", );
-
-        //        writer.WriteStartElement("spreadsheet");
-
-                
-
-        //        writer.WriteEndElement(); // Ends the States block
-        //        writer.WriteEndElement(); // Ends the Nation block
-        //        writer.WriteEndDocument();
-        //    }
-        //}
 
         /// <summary>
         /// 
