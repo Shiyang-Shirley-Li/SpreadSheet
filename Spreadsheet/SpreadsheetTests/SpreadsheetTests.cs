@@ -21,7 +21,7 @@ using System.Xml;
 namespace SpreadsheetTests
 {
     /// <summary>
-    /// This is test class for spreadsheet. Inherit the spreadsheet, thus we can test for pivate and protected 
+    /// This is a test class for spreadsheet. Inherit the spreadsheet, thus we can test for pivate and protected 
     /// methods.
     /// </summary>
     [TestClass]
@@ -62,13 +62,13 @@ namespace SpreadsheetTests
         }
 
         [TestMethod()]
-        public void SimpleFourArgsConstructorTest()
+        public void SimpleFourArgsConstructorTest()//????????
         {
             using (XmlWriter writer = XmlWriter.Create("save.txt"))
             {
                 writer.WriteStartDocument();
                 writer.WriteStartElement("spreadsheet");
-                writer.WriteAttributeString("version", "");
+                writer.WriteAttributeString("version", "1.0");
 
                 writer.WriteStartElement("cell");
                 writer.WriteElementString("name", "A1");
@@ -78,8 +78,15 @@ namespace SpreadsheetTests
                 writer.WriteEndElement();
                 writer.WriteEndDocument();
             }
-            AbstractSpreadsheet ss = new Spreadsheet("save.txt", s => true, s => s, "");
+            AbstractSpreadsheet ss = new Spreadsheet("save.txt", s => true, s => s, "1.0");
             ss.Save("save.txt");
+        }
+
+        [TestMethod()]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void SimpleFourArgsConstructorExeceptionTest()
+        {
+
         }
 
         [TestMethod]
@@ -275,7 +282,7 @@ namespace SpreadsheetTests
         }
 
         [TestMethod]
-        public void GetDirectDependentsTest()
+        public void GetDirectDependentsTest()//???????
         {
             AbstractSpreadsheet sheet = new Spreadsheet();
             sheet.SetContentsOfCell("A1", "3");
@@ -307,12 +314,12 @@ namespace SpreadsheetTests
             sheet.SetContentsOfCell("D1", "=A1*C1");
             sheet.SetContentsOfCell("E1", "15");
             sheet.SetContentsOfCell("A1", "2");
-            sheet.SetContentsOfCell("B1", "3");//how to test???????????
-            IEnumerator<string> directDependentsOfA1 = GetDirectDependents("A1").GetEnumerator();//why i cannot use sheet.Get.....???????????????
-            Assert.IsTrue(directDependentsOfA1.MoveNext());
-            Assert.AreEqual("A1", directDependentsOfA1.Current);
-            Assert.IsTrue(directDependentsOfA1.MoveNext());
-            Assert.AreEqual("A3", directDependentsOfA1.Current);
+            //sheet.SetContentsOfCell("B1", "3");//how to test???????????
+            //IEnumerator<string>  = .GetEnumerator();//why i cannot use sheet.Get.....???????????????
+            //Assert.IsTrue(directDependentsOfA1.MoveNext());
+            //Assert.AreEqual("A1", directDependentsOfA1.Current);
+            //Assert.IsTrue(directDependentsOfA1.MoveNext());
+            //Assert.AreEqual("A3", directDependentsOfA1.Current);
         }
 
         [TestMethod]
@@ -333,8 +340,65 @@ namespace SpreadsheetTests
             Assert.AreEqual("A3", directDependentsOfA1.Current);
         }
 
-        //test for changed, GetSavedVersion, getcellvalue
+        [TestMethod]
+        public void ChangedTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet();
+            Assert.IsFalse(sheet.Changed);
+            sheet.SetContentsOfCell("A1", "a");
+            Assert.IsTrue(sheet.Changed);
+        }
 
+        [TestMethod]
+        [ExpectedException(typeof(SpreadsheetReadWriteException))]
+        public void GetSavedVersionrExeceptionTest()
+        {
+            GetSavedVersion("save.txt");
+        }
+
+        [TestMethod]
+        public void GetSavedVersionTest()
+        {
+
+        }
+
+        [TestMethod]
+        public void SaveTest()//how can I test for this
+        {
+
+        }
+
+        [TestMethod]
+        [ExpectedException(typeof(InvalidNameException))]
+        public void GetCellValueExceptionTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet(isValid, s => s.ToUpper(), "1");
+            sheet.GetCellValue("a");
+        }
+
+        [TestMethod]
+        public void GetStringCellValueTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet(s => true, s => s, "");
+            sheet.SetContentsOfCell("A1", "Good job!");
+            Assert.AreEqual("Good job!", sheet.GetCellValue("A1"));
+        }
+
+        [TestMethod]
+        public void GetDoubleCellValueTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet(s => true, s => s, "");
+            sheet.SetContentsOfCell("A1", "2.0");
+            Assert.AreEqual(2.0, sheet.GetCellValue("A1"));
+        }
+
+        [TestMethod]
+        public void GetFormulaCellValueTest()
+        {
+            AbstractSpreadsheet sheet = new Spreadsheet(s => true, s => s, "");
+            sheet.SetContentsOfCell("A1", "= 1 + 0.5");
+            Assert.AreEqual(1.5, sheet.GetCellValue("A1"));
+        }
     }
 }
 

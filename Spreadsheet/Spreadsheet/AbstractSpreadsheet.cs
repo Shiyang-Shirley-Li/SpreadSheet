@@ -565,7 +565,7 @@ namespace SS
         public abstract void Save(String filename);
 
         /// <summary>
-        /// If name is null or invalid, throws an InvalidNameException.
+        /// If name is null or invalid, throws an S.
         /// 
         /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
         /// value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.

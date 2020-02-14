@@ -148,7 +148,10 @@ namespace SS
                         switch (reader.Name)
                         {
                             case "spreadsheet":
-                                Console.WriteLine("Spreadsheet version: " + reader["version"]);
+                                if (!version.Equals(reader["version"]))
+                                {
+                                    throw new SpreadsheetReadWriteException("This is not the right version!");
+                                }
                                 break;
                             case "cell":
                                 break;//no more direct info to read on cell
@@ -161,7 +164,7 @@ namespace SS
                                 break;
                         }
                     }
-      
+
                 }
             }
         }
@@ -233,7 +236,7 @@ namespace SS
                 emptyCell.content = "";
                 cells.Add(name, emptyCell);
             }
-
+            cells[name].value = newContent;//????????????????add the value what about the formula
             if (cells[name].content is Formula)
             {
                 Formula formula = (Formula)cells[name].content;
@@ -476,7 +479,25 @@ namespace SS
         /// <returns>string version</returns>
         public override string GetSavedVersion(string filename)
         {
-            return null;
+            string version = "";
+            using (XmlReader reader = XmlReader.Create(filename))
+            {
+                while (reader.Read())
+                {
+                    if (reader.IsStartElement())
+                    {
+                        switch (reader.Name)
+                        {
+                            case "spreadsheet":
+                                version = reader["version"];
+                                break;
+                        }
+
+                    }
+                }
+
+            }
+            return version;
         }
 
         /// <summary>
@@ -518,7 +539,8 @@ namespace SS
         /// <returns></returns>
         public override object GetCellValue(string name)
         {
-            return null;
+            exceptionHelper(name);
+            return cells[name].value;
         }
     }
 }
