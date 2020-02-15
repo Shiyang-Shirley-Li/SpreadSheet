@@ -186,6 +186,7 @@ namespace SS
             {
                 throw new SpreadsheetReadWriteException("Open and read file problem!");
             }
+            Changed = false;
         }
 
         /// <summary>
@@ -212,7 +213,7 @@ namespace SS
         /// <param name="name"> name of a cell</param>
         private void exceptionHelper(string name)
         {
-            if (name is null || !isVariable(name) || !IsValid(name))//???????????????
+            if (name is null || !isVariable(name) || !IsValid(name))
             {
                 throw new InvalidNameException();
             }
@@ -229,7 +230,7 @@ namespace SS
         public override object GetCellContents(string name)
         {
             exceptionHelper(name);
-
+            name = Normalize(name);
             cells.TryGetValue(name, out Cell cell);
             if (cell is null)//it means the cell is without content
             {
@@ -240,10 +241,14 @@ namespace SS
 
         private double Lookup(string str)
         {
-            if (cells[str].content is Formula || cells[str].content is string)
+            if (cells.ContainsKey(str) && cells[str].content is Double)
             {
+                return (double)cells[str].value;
             }
-            return (double)cells[str].value;
+            else
+            {
+                throw new ArgumentException();
+            }
         }
 
         /// <summary>
@@ -350,19 +355,6 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-
-            //IEnumerable<string> formulaVariables = formula.GetVariables();
-            //IEnumerable<string> dependents = GetCellsToRecalculate(name);
-            //foreach (string var in formulaVariables)
-            //{
-            //    foreach (string str in dependents)
-            //    {
-            //        if (var.Equals(str))//To check if the new formula has the named cell's direct or indirect dependents as dependees or not
-            //        {
-            //            throw new CircularException();//When it has, it is a circular dependency
-            //        }
-            //    }
-            //}
 
             IEnumerable<string> variableInFormula = formula.GetVariables();
             foreach (string variable in variableInFormula)
@@ -476,7 +468,7 @@ namespace SS
             {
                 return SetCellContents(name, val);
             }
-            else if (content[0] == '=')
+            else if (content.Length > 0 && content[0] == '=')
             {
                 string remainingContent = content.Substring(1, content.Length - 1);
                 try
@@ -564,32 +556,43 @@ namespace SS
             ////indentation to make it more readable.
             XmlWriterSettings settings = new XmlWriterSettings();
             settings.Indent = true;
-            settings.IndentChars = "  ";
+            //settings.IndentChars = "  ";
             // Create an XmlWriter inside this block, and automatically Dispose() it at the end.
-            using (XmlWriter writer = XmlWriter.Create(filename, settings))
+            try
             {
-                writer.WriteStartDocument();
-                writer.WriteStartElement("spreadsheet");
-                writer.WriteAttributeString("version", "default");//????????????? do I need = here?
-
-                writer.WriteStartElement("cell");
-                // This adds an attribute to the cell element
-                foreach (string cellName in cells.Keys)
+                using (XmlWriter writer = XmlWriter.Create(filename, settings))
                 {
-                    writer.WriteElementString("name", cellName);
-                    if (cells[cellName].content is Formula)
-                    {
-                        writer.WriteElementString("contents", "=" + cells[cellName].content.ToString());
-                    }
-                    else
-                    {
-                        writer.WriteElementString("contents", cells[cellName].content.ToString());
-                    }
-                }
+                    writer.WriteStartDocument();
+                    writer.WriteStartElement("spreadsheet");
+                    writer.WriteAttributeString("version", Version);
 
-                writer.WriteEndElement(); // Ends the cell block
-                writer.WriteEndElement(); // Ends the spreadsheet block
-                writer.WriteEndDocument();
+                    // This adds an attribute to the cell element
+                    foreach (string cellName in cells.Keys)
+                    {
+                        writer.WriteStartElement("cell");
+                        writer.WriteElementString("name", cellName);
+                        if (cells[cellName].content is Formula)
+                        {
+                            writer.WriteElementString("contents", "=" + cells[cellName].content.ToString());
+                        }
+                        else if (cells[cellName].content is Double)
+                        {
+                            writer.WriteElementString("contents", cells[cellName].content.ToString());
+                        }
+                        else
+                        {
+                            writer.WriteElementString("contents", (string)cells[cellName].content);
+                        }
+                        writer.WriteEndElement();
+                    }
+
+                    writer.WriteEndElement(); // Ends the spreadsheet block
+                    writer.WriteEndDocument();
+                }
+            }
+            catch (Exception)
+            {
+                throw new SpreadsheetReadWriteException("Opening, writing, or closing the file problem when saving");
             }
         }
 
@@ -604,7 +607,15 @@ namespace SS
         public override object GetCellValue(string name)
         {
             exceptionHelper(name);
-            return cells[name].value;
+
+            if(cells.TryGetValue(name, out Cell cell))
+            {
+                return cell.value;
+            }
+            else
+            {
+                return "";
+            }
         }
     }
 }
