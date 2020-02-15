@@ -20,19 +20,6 @@ using System.Xml;
 namespace SS
 {
     /// <summary>
-    /// This is a Cell class which defines the cell in a spreadsheet. A cell has its content and value. 
-    /// The content can be string text, double number, and formula. We can change the content of a cell, 
-    /// so make it public. The value is different from the content. Value should be either a string, 
-    /// a double, or a SpreadsheetUtilities.FormulaError. And the name of the Cell is defined in the 
-    /// Spreadsheet, thus do not need it in the class for this assignment.
-    /// </summary>
-    public class Cell
-    {
-        public object content;
-        public object value;
-    }
-
-    /// <summary>
     /// <para>
     /// This is a Spreadsheet class that implements the AbstractSpreadsheet project. A spreadsheet 
     /// consists of an infinite number of named cells.
@@ -82,6 +69,32 @@ namespace SS
     public class Spreadsheet : AbstractSpreadsheet
     {
         /// <summary>
+        /// This is a Cell class which defines the cell in a spreadsheet. A cell has its content and value. 
+        /// The content can be string text, double number, and formula. We can change the content of a cell, 
+        /// so make it public. The value is different from the content. Value should be either a string, 
+        /// a double, or a SpreadsheetUtilities.FormulaError. And the name of the Cell is defined in the 
+        /// Spreadsheet, thus do not need it in the class for this assignment.
+        /// </summary>
+        public class Cell
+        {
+            public object content;
+            public object value;
+
+            public object ReEvaluate(Func<string, double> lookup)
+            {
+                if (content is Formula)
+                {
+                    Formula formula = (Formula)content;
+                    return formula.Evaluate(lookup);
+                }
+                else
+                {
+                    return content;
+                }
+            }
+        }
+
+        /// <summary>
         /// To check if a variable is in the format of one or more letters followed
         /// by one or more digits
         /// </summary>
@@ -110,6 +123,7 @@ namespace SS
         public Spreadsheet()
             : this(s => true, s => s, "default")
         {
+
         }
 
         /// <summary>
@@ -137,35 +151,40 @@ namespace SS
         {
             cells = new Dictionary<string, Cell>();
             dependencyGraph = new DependencyGraph();
-
-            //Check open and read file exception
-            using (XmlReader reader = XmlReader.Create(filePath))
+            try
             {
-                while (reader.Read())
+                using (XmlReader reader = XmlReader.Create(filePath))
                 {
-                    if (reader.IsStartElement())
+                    while (reader.Read())
                     {
-                        switch (reader.Name)
+                        if (reader.IsStartElement())
                         {
-                            case "spreadsheet":
-                                if (!version.Equals(reader["version"]))
-                                {
-                                    throw new SpreadsheetReadWriteException("This is not the right version!");
-                                }
-                                break;
-                            case "cell":
-                                break;//no more direct info to read on cell
-                            case "name":
-                                reader.Read();
-                                string cellName = reader.Value;
-                                reader.Read();
-                                SetContentsOfCell(cellName, reader.Value);//can check validity of the names, formulas or circular dependencies 
-                                                                          //contained in the saved spreadsheet
-                                break;
+                            switch (reader.Name)
+                            {
+                                case "spreadsheet":
+                                    if (!version.Equals(reader["version"]))
+                                    {
+                                        throw new SpreadsheetReadWriteException("This is not the right version!");
+                                    }
+                                    break;
+                                case "cell":
+                                    break;//no more direct info to read on cell
+                                case "name":
+                                    reader.Read();
+                                    string cellName = reader.Value;
+                                    reader.Read();
+                                    SetContentsOfCell(cellName, reader.Value);//can check validity of the names, formulas or circular dependencies 
+                                                                              //contained in the saved spreadsheet
+                                    break;
+                            }
                         }
-                    }
 
+                    }
                 }
+            }
+            catch (Exception)
+            {
+                throw new SpreadsheetReadWriteException("Open and read file problem!");
             }
         }
 
@@ -219,6 +238,14 @@ namespace SS
             return cell.content;
         }
 
+        private double Lookup(string str)
+        {
+            if (cells[str].content is Formula || cells[str].content is string)
+            {
+            }
+            return (double)cells[str].value;
+        }
+
         /// <summary>
         /// This is a helper method for the three overloaded SetCellContent
         /// 
@@ -236,7 +263,7 @@ namespace SS
                 emptyCell.content = "";
                 cells.Add(name, emptyCell);
             }
-            cells[name].value = newContent;//????????????????add the value what about the formula
+
             if (cells[name].content is Formula)
             {
                 Formula formula = (Formula)cells[name].content;
@@ -255,6 +282,13 @@ namespace SS
 
             cells[name].content = newContent;
             Changed = true;
+
+            if (newContent is Formula)
+            {
+                newContent = cells[name].ReEvaluate(Lookup);
+            }
+            cells[name].value = newContent;
+
             return nameAndItsDependents;
         }
 
@@ -317,18 +351,18 @@ namespace SS
                 throw new ArgumentNullException();
             }
 
-            IEnumerable<string> formulaVariables = formula.GetVariables();
-            IEnumerable<string> dependents = GetCellsToRecalculate(name);
-            foreach (string var in formulaVariables)
-            {
-                foreach (string str in dependents)
-                {
-                    if (var.Equals(str))//To check if the new formula has the named cell's direct or indirect dependents as dependees or not
-                    {
-                        throw new CircularException();//When it has, it is a circular dependency
-                    }
-                }
-            }
+            //IEnumerable<string> formulaVariables = formula.GetVariables();
+            //IEnumerable<string> dependents = GetCellsToRecalculate(name);
+            //foreach (string var in formulaVariables)
+            //{
+            //    foreach (string str in dependents)
+            //    {
+            //        if (var.Equals(str))//To check if the new formula has the named cell's direct or indirect dependents as dependees or not
+            //        {
+            //            throw new CircularException();//When it has, it is a circular dependency
+            //        }
+            //    }
+            //}
 
             IEnumerable<string> variableInFormula = formula.GetVariables();
             foreach (string variable in variableInFormula)
@@ -480,30 +514,50 @@ namespace SS
         public override string GetSavedVersion(string filename)
         {
             string version = "";
-            using (XmlReader reader = XmlReader.Create(filename))
+            try
             {
-                while (reader.Read())
+                using (XmlReader reader = XmlReader.Create(filename))
                 {
-                    if (reader.IsStartElement())
+                    while (reader.Read())
                     {
-                        switch (reader.Name)
+                        if (reader.IsStartElement())
                         {
-                            case "spreadsheet":
-                                version = reader["version"];
-                                break;
+                            switch (reader.Name)
+                            {
+                                case "spreadsheet":
+                                    version = reader["version"];
+                                    break;
+                            }
+
                         }
-
                     }
-                }
 
+                }
+            }
+            catch (Exception)
+            {
+                throw new SpreadsheetReadWriteException("Opening, reading, or closing the file problem!");
             }
             return version;
         }
 
         /// <summary>
+        /// Writes the contents of this spreadsheet to the named file using an XML format.
+        /// The XML elements should be structured as follows:
         /// 
+        /// <spreadsheet version="version information goes here">
+        /// 
+        /// <cell>
+        /// <name>cell name goes here</name>
+        /// <contents>cell contents goes here</contents>    
+        /// </cell>
+        /// 
+        /// </spreadsheet>
+        ///  
+        /// If there are any problems opening, writing, or closing the file, the method should throw a
+        /// SpreadsheetReadWriteException with an explanatory message.
         /// </summary>
-        /// <param name="filename"></param>
+        /// <param name="filename">the name of the file that we need to save</param>
         public override void Save(string filename)
         {
             ////Some non-default settings for our XML writer. Specifically, use
@@ -516,14 +570,21 @@ namespace SS
             {
                 writer.WriteStartDocument();
                 writer.WriteStartElement("spreadsheet");
-                writer.WriteAttributeString("version", "version information goes here");//????????????? do I need = here?
+                writer.WriteAttributeString("version", "default");//????????????? do I need = here?
 
                 writer.WriteStartElement("cell");
                 // This adds an attribute to the cell element
                 foreach (string cellName in cells.Keys)
                 {
                     writer.WriteElementString("name", cellName);
-                    writer.WriteElementString("contents", cells[cellName].content.ToString());
+                    if (cells[cellName].content is Formula)
+                    {
+                        writer.WriteElementString("contents", "=" + cells[cellName].content.ToString());
+                    }
+                    else
+                    {
+                        writer.WriteElementString("contents", cells[cellName].content.ToString());
+                    }
                 }
 
                 writer.WriteEndElement(); // Ends the cell block
@@ -533,10 +594,13 @@ namespace SS
         }
 
         /// <summary>
+        /// If name is null or invalid, throws an InvalidNameException.
         /// 
+        /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
+        /// value should be either a string, a double, or a SpreadsheetUtilities.FormulaError.
         /// </summary>
-        /// <param name="name"></param>
-        /// <returns></returns>
+        /// <param name="name">the name of a cell</param>
+        /// <returns>the value of a cell</returns>
         public override object GetCellValue(string name)
         {
             exceptionHelper(name);

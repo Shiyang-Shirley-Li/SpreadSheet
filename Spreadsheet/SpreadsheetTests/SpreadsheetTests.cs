@@ -86,7 +86,7 @@ namespace SpreadsheetTests
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void SimpleFourArgsConstructorExeceptionTest()
         {
-
+            AbstractSpreadsheet ss = new Spreadsheet("good.txt", s => true, s => s, "1.0");
         }
 
         [TestMethod]
@@ -290,54 +290,11 @@ namespace SpreadsheetTests
             sheet.SetContentsOfCell("C1", "=B1+A1");
             sheet.SetContentsOfCell("D1", "=B1-C1");
 
-            IEnumerator<string> directDependentsOfA1 = GetDirectDependents("A1").GetEnumerator();//why i cannot use sheet.Get.....???????????????
+            IEnumerator<string> directDependentsOfA1 = GetDirectDependents("A1").GetEnumerator();
             Assert.IsTrue(directDependentsOfA1.MoveNext());
             Assert.AreEqual("B1", directDependentsOfA1.Current);
             Assert.IsTrue(directDependentsOfA1.MoveNext());
             Assert.AreEqual("C1", directDependentsOfA1.Current);
-        }
-
-        [TestMethod]
-        [ExpectedException(typeof(CircularException))]
-        public void GetCellsToRecalculateCircularExceptionTest()
-        {
-            //how to test since the exception will be thrown during set
-        }
-
-        [TestMethod]
-        public void GetCellsToRecalculateTest()
-        {
-            AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("A1", "5");
-            sheet.SetContentsOfCell("B1", "7");
-            sheet.SetContentsOfCell("C1", "=A1+B1");
-            sheet.SetContentsOfCell("D1", "=A1*C1");
-            sheet.SetContentsOfCell("E1", "15");
-            sheet.SetContentsOfCell("A1", "2");
-            //sheet.SetContentsOfCell("B1", "3");//how to test???????????
-            //IEnumerator<string>  = .GetEnumerator();//why i cannot use sheet.Get.....???????????????
-            //Assert.IsTrue(directDependentsOfA1.MoveNext());
-            //Assert.AreEqual("A1", directDependentsOfA1.Current);
-            //Assert.IsTrue(directDependentsOfA1.MoveNext());
-            //Assert.AreEqual("A3", directDependentsOfA1.Current);
-        }
-
-        [TestMethod]
-        public void GetCellsToRecalculateStringTest()
-        {
-            AbstractSpreadsheet sheet = new Spreadsheet();
-            sheet.SetContentsOfCell("A1", "5");
-            sheet.SetContentsOfCell("B1", "7");
-            sheet.SetContentsOfCell("C1", "=A1+B1");
-            sheet.SetContentsOfCell("D1", "=A1*C1");
-            sheet.SetContentsOfCell("E1", "15");
-            sheet.SetContentsOfCell("A1", "2");
-            sheet.SetContentsOfCell("B1", "3");//how to test???????????
-            IEnumerator<string> directDependentsOfA1 = GetDirectDependents("A1").GetEnumerator();//why i cannot use sheet.Get.....???????????????
-            Assert.IsTrue(directDependentsOfA1.MoveNext());
-            Assert.AreEqual("A1", directDependentsOfA1.Current);
-            Assert.IsTrue(directDependentsOfA1.MoveNext());
-            Assert.AreEqual("A3", directDependentsOfA1.Current);
         }
 
         [TestMethod]
@@ -353,13 +310,13 @@ namespace SpreadsheetTests
         [ExpectedException(typeof(SpreadsheetReadWriteException))]
         public void GetSavedVersionrExeceptionTest()
         {
-            GetSavedVersion("save.txt");
+            GetSavedVersion("2.txt");
         }
 
         [TestMethod]
         public void GetSavedVersionTest()
         {
-
+            Assert.AreEqual("1.0", GetSavedVersion("save.txt"));
         }
 
         [TestMethod]
@@ -434,54 +391,54 @@ namespace SpreadsheetTests
             Assert.IsTrue(equalityResult);
         }
 
-        [TestMethod()]
-        public void TestStress2()
-        {
-            Spreadsheet s = new Spreadsheet();
-            ISet<String> cells = new HashSet<string>();
-            for (int i = 1; i < 200; i++)
-            {
-                cells.Add("A" + i);
-                Assert.IsTrue(cells.SetEquals(s.SetCellContents("A" + i, new Formula("A" + (i + 1)))));
-            }
-        }
+        //[TestMethod()]
+        //public void TestStress2()
+        //{
+        //    Spreadsheet s = new Spreadsheet();
+        //    ISet<String> cells = new HashSet<string>();
+        //    for (int i = 1; i < 200; i++)
+        //    {
+        //        cells.Add("A" + i);
+        //        Assert.IsTrue(cells.SetEquals(s.SetCellContents("A" + i, new Formula("A" + (i + 1)))));
+        //    }
+        //}
 
-        [TestMethod()]
-        public void TestStress3()
-        {
-            Spreadsheet s = new Spreadsheet();
-            for (int i = 1; i < 200; i++)
-            {
-                s.SetCellContents("A" + i, new Formula("A" + (i + 1)));
-            }
-            try
-            {
-                s.SetCellContents("A150", new Formula("A50"));
-                Assert.Fail();
-            }
-            catch (CircularException)
-            {
-            }
-        }
+        //[TestMethod()]
+        //public void TestStress3()
+        //{
+        //    Spreadsheet s = new Spreadsheet();
+        //    for (int i = 1; i < 200; i++)
+        //    {
+        //        s.SetCellContents("A" + i, new Formula("A" + (i + 1)));
+        //    }
+        //    try
+        //    {
+        //        s.SetCellContents("A150", new Formula("A50"));
+        //        Assert.Fail();
+        //    }
+        //    catch (CircularException)
+        //    {
+        //    }
+        //}
 
-        [TestMethod()]
-        public void TestStress4()
-        {
-            Spreadsheet s = new Spreadsheet();
-            for (int i = 0; i < 500; i++)
-            {
-                s.SetCellContents("A1" + i, new Formula("A1" + (i + 1)));
-            }
-            HashSet<string> firstCells = new HashSet<string>();
-            HashSet<string> lastCells = new HashSet<string>();
-            for (int i = 0; i < 250; i++)
-            {
-                firstCells.Add("A1" + i);
-                lastCells.Add("A1" + (i + 250));
-            }
-            Assert.IsTrue(new HashSet<string>(s.SetCellContents("A1249", 25.0)).SetEquals(firstCells));
-            Assert.IsTrue(new HashSet<string>(s.SetCellContents("A1499", 0)).SetEquals(lastCells));
-        }
+        //[TestMethod()]
+        //public void TestStress4()
+        //{
+        //    Spreadsheet s = new Spreadsheet();
+        //    for (int i = 0; i < 500; i++)
+        //    {
+        //        s.SetCellContents("A1" + i, new Formula("A1" + (i + 1)));
+        //    }
+        //    HashSet<string> firstCells = new HashSet<string>();
+        //    HashSet<string> lastCells = new HashSet<string>();
+        //    for (int i = 0; i < 250; i++)
+        //    {
+        //        firstCells.Add("A1" + i);
+        //        lastCells.Add("A1" + (i + 250));
+        //    }
+        //    Assert.IsTrue(new HashSet<string>(s.SetCellContents("A1249", 25.0)).SetEquals(firstCells));
+        //    Assert.IsTrue(new HashSet<string>(s.SetCellContents("A1499", 0)).SetEquals(lastCells));
+        //}
 
     }
 }

@@ -33,8 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Content Include="architecture.PNG" />
-    <Content Include="depedency_graph_whiteboard.png" />
+    <Content Include="architecture.png" />
+    <Content Include="dependency_graph_whiteboard.png" />
     <Content Include="formula_whiteboard.png" />
     <Content Include="spreadsheet_whiteboard.png" />
   </ItemGroup>
