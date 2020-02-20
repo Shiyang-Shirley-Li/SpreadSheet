@@ -466,6 +466,11 @@ namespace SS
             name = Normalize(name);
             if (Double.TryParse(content, out double val))
             {
+                IList<string> nameAndAllDependents = SetCellContents(name, val);
+                for(int i = 1; i < nameAndAllDependents.Count; i++)
+                {
+                    cells[nameAndAllDependents[i]].value = cells[name].ReEvaluate(Lookup);
+                }
                 return SetCellContents(name, val);
             }
             else if (content.Length > 0 && content[0] == '=')
@@ -486,6 +491,13 @@ namespace SS
                             }
                         }
                     }
+
+                    IList<string> nameAndAllDependents = SetCellContents(name, contentFormula);
+                    for (int i = 1; i < nameAndAllDependents.Count; i++)
+                    {
+                        cells[nameAndAllDependents[i]].value = cells[name].ReEvaluate(Lookup);
+                    }
+
                     return SetCellContents(name, contentFormula);
                 }
                 catch (FormulaFormatException)

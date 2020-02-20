@@ -18,8 +18,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DependencyGraphTests", "Dep
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Formula", "Formula\Formula.csproj", "{06EA5587-095C-48A1-BC01-153DCF93DBF2}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Assignment_One_Grading_Tests", "..\..\..\lecture_notes\CS3500_Grading_Tests\Assignment_One_Grading_Tests\Assignment_One_Grading_Tests.csproj", "{9843374D-BE53-4021-93E5-4C3071E2265E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FormulaTests", "FormulaTests\FormulaTests.csproj", "{1D7CB1ED-14BA-4CAC-A354-0B2307789DDC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Spreadsheet", "Spreadsheet\Spreadsheet.csproj", "{3D81A8A1-E67E-4E96-8562-0B8D5879A95D}"
@@ -27,6 +25,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SpreadsheetTests", "SpreadsheetTests\SpreadsheetTests.csproj", "{13D98A3E-FA46-4548-9280-55B5FA27BF86}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Whiteboard", "Whiteboard\Whiteboard.csproj", "{E8B5BA13-914C-4103-B4D7-BF8299E92D0E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Assignment_5_Grading_Tests", "..\..\..\lecture_notes\CS3500_Grading_Tests\Assignment_5_Grading_Tests\Assignment_5_Grading_Tests.csproj", "{A7FBA379-71DA-4767-893E-F510FB85FB66}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,10 +54,6 @@ Global
 		{06EA5587-095C-48A1-BC01-153DCF93DBF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{06EA5587-095C-48A1-BC01-153DCF93DBF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{06EA5587-095C-48A1-BC01-153DCF93DBF2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{9843374D-BE53-4021-93E5-4C3071E2265E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{9843374D-BE53-4021-93E5-4C3071E2265E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{9843374D-BE53-4021-93E5-4C3071E2265E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{9843374D-BE53-4021-93E5-4C3071E2265E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{1D7CB1ED-14BA-4CAC-A354-0B2307789DDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{1D7CB1ED-14BA-4CAC-A354-0B2307789DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1D7CB1ED-14BA-4CAC-A354-0B2307789DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -74,6 +70,10 @@ Global
 		{E8B5BA13-914C-4103-B4D7-BF8299E92D0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E8B5BA13-914C-4103-B4D7-BF8299E92D0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E8B5BA13-914C-4103-B4D7-BF8299E92D0E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7FBA379-71DA-4767-893E-F510FB85FB66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7FBA379-71DA-4767-893E-F510FB85FB66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7FBA379-71DA-4767-893E-F510FB85FB66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7FBA379-71DA-4767-893E-F510FB85FB66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
