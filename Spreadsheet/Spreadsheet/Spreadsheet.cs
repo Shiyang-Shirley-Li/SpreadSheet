@@ -272,34 +272,25 @@ namespace SS
                 cells.Add(name, emptyCell);
             }
 
-            if (cells[name].content is Formula)
+            if (cells[name].content is Formula)//if the previous content of cell is Formula, we need to remove the dependency
             {
-                //IEnumerable<string> variableInFormula = formula.GetVariables();
-                //foreach (string variable in variableInFormula)
-                //{
-                //    dependencyGraph.AddDependency(variable, name);//add dependency for the new formula
-                //}
-                //Formula formula = (Formula)cells[name].content;
-                //IEnumerable<string> variableInFormula = formula.GetVariables();//Get dependees of the named cell
-                //foreach (string variable in variableInFormula)
-                //{
-                //    dependencyGraph.RemoveDependency(variable, name);//change the formula to a number, we need to remove previous depdency
-                //}
-                //Formula formula = (Formula)cells[name].content;
-                //IEnumerable<string> variableInFormula = formula.GetVariables();//Get dependees of the named cell
-                //foreach (string variable in variableInFormula)
-                //{
-                //    dependencyGraph.ReplaceDependents(variable, new HashSet<string> { name });//change the formula to a number, we need to remove previous depdency
-                //}
                 Formula formula = (Formula)cells[name].content;
                 IEnumerable<string> variableInFormula = formula.GetVariables();//Get dependees of the named cell
-                IEnumerable<string> preNameAndItsDependents = GetCellsToRecalculate(name);
                 foreach (string variable in variableInFormula)
                 {
-                    dependencyGraph.ReplaceDependents(variable, preNameAndItsDependents);//change the formula to a number, we need to remove previous depdency
+                    dependencyGraph.RemoveDependency(variable, name);//change the formula to a number, we need to remove previous depdency
                 }
             }
 
+            if (newContent is Formula)//if the new content of cell is Formula, we need to add the dependency
+            {
+                Formula formula = (Formula)newContent;
+                IEnumerable<string> variableInFormula = formula.GetVariables();
+                foreach (string variable in variableInFormula)
+                {
+                    dependencyGraph.AddDependency(variable, name);//add dependency for the new formula
+                }
+            }
             IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
             foreach (String dependent in directNIndirectDependents)
             {
@@ -516,7 +507,7 @@ namespace SS
                     IList<string> nameAndAllDependents = SetCellContents(name, contentFormula);
                     for (int i = 1; i < nameAndAllDependents.Count; i++)
                     {
-                        cells[nameAndAllDependents[i]].value = cells[name].ReEvaluate(Lookup);
+                        cells[nameAndAllDependents[i]].value = cells[nameAndAllDependents[i]].ReEvaluate(Lookup);
                     }
 
                     return nameAndAllDependents;
