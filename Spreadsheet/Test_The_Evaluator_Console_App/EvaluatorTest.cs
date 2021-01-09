@@ -6,7 +6,7 @@ using System;
 /// Copyright:This work may not be copied for use in Academic Coursework.
 /// 
 /// I, Shiyang(Shirley) Li, certify that I wrote this code from scratch and did not copy it in part or whole from  
-/// another source.  All references used in the completion of the assignment are cited in my README file. 
+/// another source.  All references used in the completion of the code are cited in my README file. 
 /// 
 /// This file is a method that tests the FormulaEvaluator project.
 /// </summary>
