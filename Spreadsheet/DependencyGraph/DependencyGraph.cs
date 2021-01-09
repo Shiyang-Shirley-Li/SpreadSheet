@@ -1,9 +1,3 @@
-// Skeleton implementation written by Joe Zachary for CS 3500, September 2013.
-// Version 1.1 (Fixed error in comment for RemoveDependency.)
-// Version 1.2 - Daniel Kopta 
-//               (Clarified meaning of dependent and dependee.)
-//               (Clarified names in solution/project structure.)
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -12,11 +6,10 @@ using System.Text;
 /// <summary>
 /// Author: Shiyang(Shirley) Li
 /// Date:01/20/2020
-/// Course: CS 3500, University of Utah, School of Computing
-/// Copyright: CS 3500 and Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
+/// Copyright: Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
 /// 
 /// I, Shiyang(Shirley) Li, certify that I wrote this code from scratch and did not copy it in part or whole from  
-/// another source.  All references used in the completion of the assignment are cited in my README file. 
+/// another source.  All references used in the completion of the code are cited in my README file. 
 /// 
 /// This file is a method that builds the dependency relationships between cells in Spreadsheet
 /// 
