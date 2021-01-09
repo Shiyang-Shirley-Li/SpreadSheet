@@ -1,42 +1,10 @@
-﻿// Assignment 5
-// Written by Joe Zachary for CS 3500, September 2013
-// Version 1.8
-// Revision history:  
-//   Version 1.1 9/20/12 12:59 p.m.  Fixed comment that describes circular dependencies
-//   Version 1.2 9/20/12 1:38 p.m.   Changed return type of GetCellContents to object
-//   Version 1.3 9/24/12 8:41 a.m.   Modified the specification of GetCellsToRecalculate by 
-//                                   adding a requirement for the names parameter
-// Branched from PS4Skeleton
-//   Version 1.4                     Branched from PS4Skeleton
-//           Edited class comment for AbstractSpreadsheet
-//           Made the three SetCellContents methods protected
-//           Added a new method SetContentsOfCell.  This method abstract.
-//           Added a new method GetCellValue.  This method is abstract.
-//           Added a new property Changed.  This property is abstract.
-//           Added a new method Save.  This method is abstract.
-//           Added a new method GetSavedVersion.  This method is abstract.
-//           Added a new class SpreadsheetReadWriteException.
-//           Added IsValid, Normalize, and Version properties
-//           Added a constructor for AbstractSpreadsheet
-
-// Revision history:
-//    Version 1.5 9/28/12 2:22 p.m.   Fixed example in comment for Save
-//    Version 1.6 9/29/12 11:07 a.m.  Put a constructor into SpreadsheetReadWriteException
-//    Version 1.7 9/29/12 11:14 a.m.  Added missing </summary> tag to comment
-//    
-//    Version 1.8 (Daniel Kopta)      Unified error checking for setting cell contents
-//                (Fall 2019)         SetCellContents signatures changed to return IList
-//    Version 1.9 (Jim de St. Germain) Updated documentation
-//                            
-
 /// <summary>
 /// Author: Shiyang(Shirley) Li
 /// Date:02/10/2020
-/// Course: CS 3500, University of Utah, School of Computing
-/// Copyright: CS 3500 and Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
+/// Copyright:Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
 /// 
 /// I, Shiyang(Shirley) Li, certify that I added some comments for the "Visit" mehtod and did not copy it in
-/// part or whole from another source.  All references used in the completion of the assignment are 
+/// part or whole from another source.  All references used in the completion of the code are 
 /// cited in my README file. 
 /// 
 /// This file is a abstract method that build the "internals" of the spreadsheet
