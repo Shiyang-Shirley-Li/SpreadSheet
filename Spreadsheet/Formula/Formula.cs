@@ -1,22 +1,3 @@
-﻿// Skeleton written by Joe Zachary for CS 3500, September 2013
-// Read the entire skeleton carefully and completely before you
-// do anything else!
-
-// Version 1.1 (9/22/13 11:45 a.m.)
-
-// Change log:
-//  (Version 1.1) Repaired mistake in GetTokens
-//  (Version 1.1) Changed specification of second constructor to
-//                clarify description of how validation works
-
-// (Daniel Kopta) 
-// Version 1.2 (9/10/17) 
-
-// Change log:
-//  (Version 1.2) Changed the definition of equality with regards
-//                to numeric tokens
-
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -25,11 +6,10 @@ using System.Text.RegularExpressions;
 /// <summary>
 /// Author: Shiyang(Shirley) Li
 /// Date:01/27/2020
-/// Course: CS 3500, University of Utah, School of Computing
-/// Copyright: CS 3500 and Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
+/// Copyright: Shiyang(Shirley) Li - This work may not be copied for use in Academic Coursework.
 /// 
 /// I, Shiyang(Shirley) Li, certify that I wrote this code from scratch and did not copy it in part or whole from  
-/// another source.  All references used in the completion of the assignment are cited in my README file. 
+/// another source.  All references used in the completion of the code are cited in my README file. 
 /// 
 /// This file is a method that check validity of formula and evaluates formulas using standard infix notation, 
 /// which respects the usual precedence rules.
