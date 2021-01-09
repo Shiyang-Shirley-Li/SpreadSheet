@@ -153,6 +153,7 @@ namespace SS
             dependencyGraph = new DependencyGraph();
             try
             {
+                string cellName = null;
                 using (XmlReader reader = XmlReader.Create(filePath))
                 {
                     while (reader.Read())
@@ -171,7 +172,9 @@ namespace SS
                                     break;//no more direct info to read on cell
                                 case "name":
                                     reader.Read();
-                                    string cellName = reader.Value;
+                                    cellName = reader.Value;
+                                    break;
+                                case "contents":
                                     reader.Read();
                                     SetContentsOfCell(cellName, reader.Value);//can check validity of the names, formulas or circular dependencies 
                                                                               //contained in the saved spreadsheet
@@ -241,7 +244,7 @@ namespace SS
 
         private double Lookup(string str)
         {
-            if (cells.ContainsKey(str) && cells[str].content is Double)
+            if (cells.ContainsKey(str) && cells[str].value is Double)
             {
                 return (double)cells[str].value;
             }
@@ -269,7 +272,7 @@ namespace SS
                 cells.Add(name, emptyCell);
             }
 
-            if (cells[name].content is Formula)
+            if (cells[name].content is Formula)//if the previous content of cell is Formula, we need to remove the dependency
             {
                 Formula formula = (Formula)cells[name].content;
                 IEnumerable<string> variableInFormula = formula.GetVariables();//Get dependees of the named cell
@@ -279,6 +282,15 @@ namespace SS
                 }
             }
 
+            if (newContent is Formula)//if the new content of cell is Formula, we need to add the dependency
+            {
+                Formula formula = (Formula)newContent;
+                IEnumerable<string> variableInFormula = formula.GetVariables();
+                foreach (string variable in variableInFormula)
+                {
+                    dependencyGraph.AddDependency(variable, name);//add dependency for the new formula
+                }
+            }
             IEnumerable<String> directNIndirectDependents = GetCellsToRecalculate(name);
             foreach (String dependent in directNIndirectDependents)
             {
@@ -356,11 +368,11 @@ namespace SS
                 throw new ArgumentNullException();
             }
 
-            IEnumerable<string> variableInFormula = formula.GetVariables();
-            foreach (string variable in variableInFormula)
-            {
-                dependencyGraph.AddDependency(variable, name);//add dependency for the new formula
-            }
+            //IEnumerable<string> variableInFormula = formula.GetVariables();
+            //foreach (string variable in variableInFormula)
+            //{
+            //    dependencyGraph.AddDependency(variable, name);//add dependency for the new formula
+            //}
 
             return SetCellContentsHelper(name, formula);
         }
@@ -466,6 +478,11 @@ namespace SS
             name = Normalize(name);
             if (Double.TryParse(content, out double val))
             {
+                IList<string> nameAndAllDependents = SetCellContents(name, val);
+                for(int i = 1; i < nameAndAllDependents.Count; i++)
+                {
+                    cells[nameAndAllDependents[i]].value = cells[nameAndAllDependents[i]].ReEvaluate(Lookup);
+                }
                 return SetCellContents(name, val);
             }
             else if (content.Length > 0 && content[0] == '=')
@@ -486,7 +503,14 @@ namespace SS
                             }
                         }
                     }
-                    return SetCellContents(name, contentFormula);
+
+                    IList<string> nameAndAllDependents = SetCellContents(name, contentFormula);
+                    for (int i = 1; i < nameAndAllDependents.Count; i++)
+                    {
+                        cells[nameAndAllDependents[i]].value = cells[nameAndAllDependents[i]].ReEvaluate(Lookup);
+                    }
+
+                    return nameAndAllDependents;
                 }
                 catch (FormulaFormatException)
                 {

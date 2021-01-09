@@ -281,22 +281,6 @@ namespace SpreadsheetTests
             IEnumerable<string> directDependents = GetDirectDependents("1a");
         }
 
-        //[TestMethod]
-        //public void GetDirectDependentsTest()
-        //{
-        //    AbstractSpreadsheet sheet = new Spreadsheet();
-        //    sheet.SetContentsOfCell("A1", "3");
-        //    sheet.SetContentsOfCell("B1", "=A1*A1");
-        //    sheet.SetContentsOfCell("C1", "=B1+A1");
-        //    sheet.SetContentsOfCell("D1", "=B1-C1");
-
-        //    IEnumerator<string> directDependentsOfA1 = GetDirectDependents("A1").GetEnumerator();
-        //    Assert.IsTrue(directDependentsOfA1.MoveNext());
-        //    Assert.AreEqual("B1", directDependentsOfA1.Current);
-        //    Assert.IsTrue(directDependentsOfA1.MoveNext());
-        //    Assert.AreEqual("C1", directDependentsOfA1.Current);
-        //}
-
         [TestMethod]
         public void ChangedTest()
         {
@@ -351,38 +335,83 @@ namespace SpreadsheetTests
             Assert.AreEqual(1.5, sheet.GetCellValue("A1"));
         }
 
-        //Stress Test
-        //[TestMethod()]
-        //public void TestStress1()
-        //{
-        //    Spreadsheet s = new Spreadsheet();
-        //    s.SetContentsOfCell("A1", "=B1+B2");
-        //    s.SetContentsOfCell("B1", "=C1-C2");
-        //    s.SetContentsOfCell("B2", "=C3*C4");
-        //    s.SetContentsOfCell("C1", "=D1*D2");
-        //    s.SetContentsOfCell("C2", "=D3*D4");
-        //    s.SetContentsOfCell("C3", "=D5*D6");
-        //    s.SetContentsOfCell("C4", "=D7*D8");
-        //    s.SetContentsOfCell("D1", "E1");
-        //    s.SetContentsOfCell("D2", "E1");
-        //    s.SetContentsOfCell("D3", "E1");
-        //    s.SetContentsOfCell("D4", "E1");
-        //    s.SetContentsOfCell("D5", "E1");
-        //    s.SetContentsOfCell("D6", "E1");
-        //    s.SetContentsOfCell("D7", "E1");
-        //    s.SetContentsOfCell("D8", "E1");
-        //    IList<string> list = new List<string> { "A1", "B1", "B2", "C1", "C2", "C3", "C4", "D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "E1" };
-        //    IList<string> testList = s.SetContentsOfCell("E1", "0");
-        //    testList.ToString();
-        //    bool equalityResult = true;
-        //    for (int i = 0; i < list.Count; i++)
-        //    {
-        //        if (!list[i].Equals(testList[i]))
-        //        {
-        //            equalityResult = false;
-        //        }
-        //    }
-        //    Assert.IsTrue(equalityResult);
-        //}
+        // STRESS TESTS
+        [TestMethod()]
+        public void TestStress1()
+        {
+            Spreadsheet s = new Spreadsheet();
+            s.SetContentsOfCell("A1", "=B1+B2");
+            s.SetContentsOfCell("B1", "=C1-C2");
+            s.SetContentsOfCell("B2", "=C3*C4");
+            s.SetContentsOfCell("C1", "=D1*D2");
+            s.SetContentsOfCell("C2", "=D3*D4");
+            s.SetContentsOfCell("C3", "=D5*D6");
+            s.SetContentsOfCell("C4", "=D7*D8");
+            s.SetContentsOfCell("D1", "=E1");
+            s.SetContentsOfCell("D2", "=E1");
+            s.SetContentsOfCell("D3", "=E1");
+            s.SetContentsOfCell("D4", "=E1");
+            s.SetContentsOfCell("D5", "=E1");
+            s.SetContentsOfCell("D6", "=E1");
+            s.SetContentsOfCell("D7", "=E1");
+            s.SetContentsOfCell("D8", "=E1");
+            IList<string> cells = new List<string>(s.SetContentsOfCell("E1", "0"));
+            IList<string> testList = new List<string> { "E1", "D8", "D7", "C4", "D6", "D5", "C3", "B2", "D4", "D3", "C2", "D2", "D1", "C1", "B1", "A1" };
+            bool equalityResult = true;
+            for (int i = 0; i < cells.Count; i++)
+            {
+                if (!cells[i].Equals(testList[i]))
+                {
+                    equalityResult = false;
+                }
+            }
+            Assert.IsTrue(equalityResult);
+            
+        }
+
+        // Repeated for extra weight
+        [TestMethod()]
+        public void TestStress1a()
+        {
+            TestStress1();
+        }
+        [TestMethod()]
+        public void TestStress1b()
+        {
+            TestStress1();
+        }
+        [TestMethod()]
+        public void TestStress1c()
+        {
+            TestStress1();
+        }
+
+        [TestMethod()]
+        public void TestStress2()
+        {
+            Spreadsheet s = new Spreadsheet();
+            ISet<string> cells = new HashSet<string>();
+            for (int i = 1; i < 200; i++)
+            {
+                cells.Add("A" + i);
+                Assert.IsTrue(cells.SetEquals(s.SetContentsOfCell("A" + i, "=" + new Formula("A" + (i + 1)))));
+            }
+        }
+        [TestMethod()]
+        public void TestStress2a()
+        {
+            TestStress2();
+        }
+        [TestMethod()]
+        public void TestStress2b()
+        {
+            TestStress2();
+        }
+        [TestMethod()]
+        public void TestStress2c()
+        {
+            TestStress2();
+        }
     }
 }
+
