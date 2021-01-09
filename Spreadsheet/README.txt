@@ -1,9 +1,8 @@
 Author:     [Shirley(Shiyang) Li]
 Partner:    [None]
 Date:       [2/10/2020]
-Course:     CS 3500, University of Utah, School of Computing
 Name:       Spreadsheet Model
-Copyright:  CS 3500 and [Shirley(Shiyang) Li] - This work may not be copied for use in Academic Coursework.
+Copyright:  [Shirley(Shiyang) Li] - This work may not be copied for use in Academic Coursework.
 
 Formula Evaluator   01/11/2020 - 01/17/2020
 1. Comments:
